@@ -7,6 +7,7 @@ Welcome to the **AI Mentor** repository! AI Mentor is an advanced, AI-powered pe
 ## 📖 Project Vision
 
 Education is not one-size-fits-all. Every student has unique background knowledge, learning speed, interests, and pain points. **AI Mentor** aims to solve this by providing:
+
 - **Hyper-personalized learning paths:** Dynamically adjusting content based on real-time feedback, assessment performance, and user goals.
 - **Contextual mentoring:** An AI companion that is aware of your workspace, code, or context, assisting you directly with step-by-step guidance rather than simple answers.
 - **Unified multi-platform experience:** Learn anywhere, whether on a desktop browser, on-the-go via mobile, or through custom admin portals for curriculum managers.
@@ -35,11 +36,11 @@ AI Mentor Monorepo/
 
 ### Module Descriptions
 
-1. **`apps/web`**: Responsive main application offering complete dashboard views, chat interfaces, progress trackers, and real-time workspaces.
-2. **`apps/mobile`**: Streamlined native/mobile build maximizing engagement with notification-driven learning, daily flashcards, and quick-reply AI.
-3. **`apps/admin`**: Enterprise-grade backoffice for managing content schemas, overseeing model fine-tunes, monitoring system latency, and checking mentorship analytics.
+1. **`apps/web`**: Responsive main application offering complete dashboard views, chat interfaces, progress trackers, and real-time workspaces. Supports path alias (`@/*`).
+2. **`apps/mobile`**: Streamlined native/mobile build maximizing engagement with notification-driven learning, daily flashcards, and quick-reply AI. Supports path alias (`@/*`).
+3. **`apps/admin`**: Enterprise-grade backoffice for managing content schemas, overseeing model fine-tunes, monitoring system latency, and checking mentorship analytics. Supports path alias (`@/*`).
 4. **`packages/core`**: The single source of truth for schema validation, database clients, authentication adapters, and user billing logic.
-5. **`packages/shared-ui`**: A strict component library utilizing utility-first CSS and state-of-the-art layout patterns, conforming to unified design principles.
+5. **`packages/shared-ui`**: A strict component library containing a full visual design system (Button, Card, Input, Modal, Toast, Spinner, Navigation, BaseLayout, LoadingPage, ErrorPage).
 6. **`packages/ai-engine`**: Advanced prompt management, fallback handling between OpenAI/Claude/Llama models, and specialized retrieval-augmented generation (RAG) orchestration.
 7. **`packages/plugin-sdk`**: A standardized API framework permitting developers to compile and mount sandbox micro-apps into the main AI Mentor container.
 
@@ -48,19 +49,49 @@ AI Mentor Monorepo/
 ## 🛠️ Getting Started
 
 ### Prerequisites
+
 - Node.js (>= v20)
 - `pnpm` (>= v9)
 
 ### Installation
+
 Clone this repository and install dependencies from the root directory:
+
 ```bash
 pnpm install
 ```
 
+### Environment Configurations
+
+Rename `.env.example` to `.env` and fill out your variables:
+
+```bash
+cp .env.example .env
+```
+
+### Build Workspace
+
+To compile and build all the shared packages and application typescript bundles:
+
+```bash
+pnpm build
+```
+
 ### Running Tests
+
 To run all test suites across the workspace:
+
 ```bash
 pnpm test
+```
+
+### Code Quality (ESLint & Prettier)
+
+To lint and format files across all projects:
+
+```bash
+pnpm exec eslint .
+pnpm exec prettier --write .
 ```
 
 For more guides and documentation, check out the [Docs](./docs/) folder.

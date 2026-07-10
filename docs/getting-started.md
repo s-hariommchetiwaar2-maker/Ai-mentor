@@ -5,6 +5,7 @@ This guide helps developers set up their workspace environment and begin contrib
 ## Quickstart
 
 1. **Clone the Repository**
+
    ```bash
    git clone <repository-url>
    cd ai-mentor
@@ -12,12 +13,14 @@ This guide helps developers set up their workspace environment and begin contrib
 
 2. **Install Workspace Dependencies**
    We use PNPM to optimize package installation and module resolution.
+
    ```bash
    pnpm install
    ```
 
 3. **Verify the Structure**
    Ensure all packages are recognized by running:
+
    ```bash
    pnpm -r exec pwd
    ```
@@ -30,6 +33,7 @@ This guide helps developers set up their workspace environment and begin contrib
 ## Creating a New Package or Application
 
 When adding a new service or client:
+
 1. Put it under either `apps/` or `packages/` based on whether it is an end-user interface or reusable library.
 2. Ensure its `package.json` specifies the name with correct prefixing (e.g. `@ai-mentor/<name>`).
 3. Add a basic description, main file entry, and test script.
