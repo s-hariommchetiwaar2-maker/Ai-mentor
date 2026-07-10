@@ -1,0 +1,10 @@
+{
+  "name": "@ai-mentor/core",
+  "version": "1.0.0",
+  "description": "Core business logic, orchestrators, and services for AI Mentor.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"@ai-mentor/core: No tests specified\" && exit 0"
+  }
+}

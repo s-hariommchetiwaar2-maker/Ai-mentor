@@ -1,0 +1,13 @@
+{
+  "name": "@ai-mentor/admin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Mentor Administrative portal.",
+  "scripts": {
+    "test": "echo \"@ai-mentor/admin: No tests specified\" && exit 0"
+  },
+  "dependencies": {
+    "@ai-mentor/core": "workspace:*",
+    "@ai-mentor/shared-ui": "workspace:*"
+  }
+}

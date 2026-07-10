@@ -1,0 +1,10 @@
+{
+  "name": "@ai-mentor/plugin-sdk",
+  "version": "1.0.0",
+  "description": "Software Development Kit (SDK) for creating third-party integrations and custom mentor modules.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"@ai-mentor/plugin-sdk: No tests specified\" && exit 0"
+  }
+}

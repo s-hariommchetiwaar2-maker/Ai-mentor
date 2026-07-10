@@ -1,0 +1,13 @@
+{
+  "name": "@ai-mentor/web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Mentor Web Client application.",
+  "scripts": {
+    "test": "echo \"@ai-mentor/web: No tests specified\" && exit 0"
+  },
+  "dependencies": {
+    "@ai-mentor/core": "workspace:*",
+    "@ai-mentor/shared-ui": "workspace:*"
+  }
+}

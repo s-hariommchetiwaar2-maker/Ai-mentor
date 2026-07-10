@@ -1,0 +1,10 @@
+{
+  "name": "@ai-mentor/shared-ui",
+  "version": "1.0.0",
+  "description": "Shared component library and design system for AI Mentor.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"@ai-mentor/shared-ui: No tests specified\" && exit 0"
+  }
+}

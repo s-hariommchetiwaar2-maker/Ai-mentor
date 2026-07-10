@@ -1,0 +1,12 @@
+{
+  "name": "@ai-mentor/mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Mentor Mobile Client application.",
+  "scripts": {
+    "test": "echo \"@ai-mentor/mobile: No tests specified\" && exit 0"
+  },
+  "dependencies": {
+    "@ai-mentor/core": "workspace:*"
+  }
+}
