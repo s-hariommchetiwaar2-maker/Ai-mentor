@@ -1,3 +1,7 @@
+export * from './database.js';
+export * from './security.js';
+export * from './auth-service.js';
+
 export interface UserProfile {
   id: string;
   name: string;

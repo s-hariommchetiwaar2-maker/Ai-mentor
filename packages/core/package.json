@@ -7,10 +7,12 @@
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
-    "test": "echo \"@ai-mentor/core: No tests specified\" && exit 0"
+    "test": "node --import tsx src/auth.test.ts"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "tsx": "^4.0.0"
   }
 }

@@ -5,7 +5,8 @@
     "baseUrl": ".",
     "noUnusedLocals": false,
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@ai-mentor/core": ["../../packages/core/src/index.ts"]
     }
   },
   "include": ["src/**/*"]
