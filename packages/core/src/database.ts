@@ -47,49 +47,52 @@ class MockDatabase {
     this.users.set('u-admin', {
       id: 'u-admin',
       email: 'admin@aimentor.com',
-      passwordHash: 'beed170d3e5951bec84c2d7831437ff2e47dd035ab03fc6c54e3daf2effd7db638ed5ebccdcd9bd4a6a2fcee28effbac67f55f4f7453c1d9a745468a525e7150',
+      passwordHash:
+        'beed170d3e5951bec84c2d7831437ff2e47dd035ab03fc6c54e3daf2effd7db638ed5ebccdcd9bd4a6a2fcee28effbac67f55f4f7453c1d9a745468a525e7150',
       passwordSalt: salt1,
       role: 'admin',
       isVerified: true,
-      rememberMe: false
+      rememberMe: false,
     });
     this.profiles.set('p-admin', {
       id: 'p-admin',
       userId: 'u-admin',
       fullName: 'System Administrator',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
 
     this.users.set('u-mentor', {
       id: 'u-mentor',
       email: 'mentor@aimentor.com',
-      passwordHash: '445d1a262449acefbae8f7bfc41e062b8a9377de1a85fb262043b084d79609f079676597798ffb46c18d26cce17ba042892a3ebb8be2cc802e16ca5eeb0e1778',
+      passwordHash:
+        '445d1a262449acefbae8f7bfc41e062b8a9377de1a85fb262043b084d79609f079676597798ffb46c18d26cce17ba042892a3ebb8be2cc802e16ca5eeb0e1778',
       passwordSalt: salt2,
       role: 'mentor',
       isVerified: true,
-      rememberMe: false
+      rememberMe: false,
     });
     this.profiles.set('p-mentor', {
       id: 'p-mentor',
       userId: 'u-mentor',
       fullName: 'Expert Mentor',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
 
     this.users.set('u-student', {
       id: 'u-student',
       email: 'student@aimentor.com',
-      passwordHash: 'd2219598b72426d7f933d82f4e6df889148d6fb9c8941036e9b863eddcff7b8654e9b0925bb87ab28261c9b1715827e7c4be42869775380ae5902315ff9a5968',
+      passwordHash:
+        'd2219598b72426d7f933d82f4e6df889148d6fb9c8941036e9b863eddcff7b8654e9b0925bb87ab28261c9b1715827e7c4be42869775380ae5902315ff9a5968',
       passwordSalt: salt3,
       role: 'student',
       isVerified: true,
-      rememberMe: false
+      rememberMe: false,
     });
     this.profiles.set('p-student', {
       id: 'p-student',
       userId: 'u-student',
       fullName: 'Active Student',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
   }
 
@@ -98,7 +101,9 @@ class MockDatabase {
   }
 
   public findUserByEmail(email: string): User | undefined {
-    return this.getUsers().find((u) => u.email.toLowerCase() === email.toLowerCase());
+    return this.getUsers().find(
+      (u) => u.email.toLowerCase() === email.toLowerCase()
+    );
   }
 
   public findUserById(id: string): User | undefined {

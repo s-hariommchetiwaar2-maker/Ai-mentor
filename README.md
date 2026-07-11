@@ -22,7 +22,7 @@ This project is built as a professional, unified monorepo using **pnpm workspace
 ```
 AI Mentor Monorepo/
 ├── apps/                        # Frontend and application clients
-│   ├── web/                     # Web-based interactive student interface
+│   ├── web/                     # Web-based interactive student interface and AI Dashboard
 │   ├── mobile/                  # Mobile client for learning on-the-go (React Native/Expo)
 │   └── admin/                   # Administrative panel for managing curricula & user analytics
 ├── packages/                    # Modular shared packages
@@ -36,13 +36,25 @@ AI Mentor Monorepo/
 
 ### Module Descriptions
 
-1. **`apps/web`**: Responsive main application offering complete dashboard views, chat interfaces, progress trackers, and real-time workspaces. Supports path alias (`@/*`).
+1. **`apps/web`**: Responsive main application offering complete dashboard views, active AI chat interfaces, progress trackers, and real-time workspaces. Supports path alias (`@/*`).
 2. **`apps/mobile`**: Streamlined native/mobile build maximizing engagement with notification-driven learning, daily flashcards, and quick-reply AI. Supports path alias (`@/*`).
 3. **`apps/admin`**: Enterprise-grade backoffice for managing content schemas, overseeing model fine-tunes, monitoring system latency, and checking mentorship analytics. Supports path alias (`@/*`).
 4. **`packages/core`**: The single source of truth for schema validation, database clients, authentication adapters, and user billing logic.
 5. **`packages/shared-ui`**: A strict component library containing a full visual design system (Button, Card, Input, Modal, Toast, Spinner, Navigation, BaseLayout, LoadingPage, ErrorPage).
 6. **`packages/ai-engine`**: Advanced prompt management, fallback handling between OpenAI/Claude/Llama models, and specialized retrieval-augmented generation (RAG) orchestration.
 7. **`packages/plugin-sdk`**: A standardized API framework permitting developers to compile and mount sandbox micro-apps into the main AI Mentor container.
+
+---
+
+## 📊 AI Mentor Dashboard & Workspace
+
+The platform features an advanced interactive dashboard:
+
+- **Sidebar & Top Navigation**: Clean layout supporting rapid routing.
+- **Interactive AI Chat**: Searchable chat sessions, active conversing thread, and toggleable Favorite lists.
+- **Workspace Sandbox**: Browse projects (e.g. Neural Network Sandbox), view simulated file specifications, and bookmark files instantly.
+- **Notebook & Bookmarks**: Dynamic custom note creation and unified bookmark managers.
+- **Interactive Courseboards**: Monitor overall learning metrics (completion meters, active lessons).
 
 ---
 

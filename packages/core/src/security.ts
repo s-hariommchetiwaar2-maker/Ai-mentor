@@ -12,21 +12,32 @@ export interface PasswordHash {
 const ITERATIONS = 100000;
 const HASH_LENGTH = 64;
 const DIGEST = 'sha512';
-const SECRET_SIGN_KEY = process.env.JWT_SECRET || 'fallback-super-secure-hmac-signing-key-32-chars';
+const SECRET_SIGN_KEY =
+  process.env.JWT_SECRET || 'fallback-super-secure-hmac-signing-key-32-chars';
 
 /**
  * Hashes a plaintext password using PBKDF2 with 100,000 iterations.
  */
 export function hashPassword(password: string, salt?: string): PasswordHash {
   const finalSalt = salt || randomBytes(16).toString('hex');
-  const hash = pbkdf2Sync(password, finalSalt, ITERATIONS, HASH_LENGTH, DIGEST).toString('hex');
+  const hash = pbkdf2Sync(
+    password,
+    finalSalt,
+    ITERATIONS,
+    HASH_LENGTH,
+    DIGEST
+  ).toString('hex');
   return { hash, salt: finalSalt };
 }
 
 /**
  * Verifies a plaintext password against a stored hash and salt.
  */
-export function verifyPassword(password: string, hash: string, salt: string): boolean {
+export function verifyPassword(
+  password: string,
+  hash: string,
+  salt: string
+): boolean {
   const result = hashPassword(password, salt);
   return result.hash === hash;
 }
@@ -45,11 +56,16 @@ export interface UserSession {
 /**
  * Generates a mock JWT/Token session with an HMAC SHA256 signature to prevent tampering.
  */
-export function generateToken(payload: Omit<UserSession, 'exp'>, expiresInHours = 24): string {
+export function generateToken(
+  payload: Omit<UserSession, 'exp'>,
+  expiresInHours = 24
+): string {
   const exp = Date.now() + expiresInHours * 60 * 60 * 1000;
   const session: UserSession = { ...payload, exp };
 
-  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const header = Buffer.from(
+    JSON.stringify({ alg: 'HS256', typ: 'JWT' })
+  ).toString('base64url');
   const body = Buffer.from(JSON.stringify(session)).toString('base64url');
 
   // Create cryptographic HMAC-SHA256 signature
@@ -76,7 +92,9 @@ export function verifyToken(token: string): UserSession | null {
     const expectedSignature = hmac.digest('base64url');
 
     if (signature !== expectedSignature) {
-      console.warn('[Security Warning] Token signature verification failed! Tampering detected.');
+      console.warn(
+        '[Security Warning] Token signature verification failed! Tampering detected.'
+      );
       return null;
     }
 
