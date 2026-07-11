@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.settings.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@ai-mentor/ai-engine/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*"]
+}

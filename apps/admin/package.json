@@ -1,0 +1,21 @@
+{
+  "name": "@ai-mentor/admin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Mentor Administrative portal.",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "test": "echo \"@ai-mentor/admin: No tests specified\" && exit 0"
+  },
+  "dependencies": {
+    "@ai-mentor/core": "workspace:*",
+    "@ai-mentor/shared-ui": "workspace:*",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3"
+  }
+}
