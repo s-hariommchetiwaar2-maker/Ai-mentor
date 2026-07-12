@@ -40,7 +40,7 @@ export interface TenderListing {
   location: string;
   country: string;
   state: string;
-  industry: 'Construction' | 'IT' | 'Energy' | 'Healthcare' | 'Education' | 'Railways' | 'Defence' | 'Telecom' | 'Smart Cities' | 'Agriculture';
+  industry: 'Infrastructure' | 'Roads & Highways' | 'Airports & Aviation' | 'Railways & Metro' | 'Power & Energy' | 'Water Resources' | 'Healthcare' | 'Education' | 'IT & Digital' | 'Government Buildings' | 'Defence' | 'Agriculture' | 'Urban Development' | 'Ports & Shipping' | 'Mining & Oil' | 'International Tenders';
   status: 'Open' | 'Under Evaluation' | 'Awarded' | 'Closed';
   description: string;
   eligibility: string; // Minimum bidder qualification

@@ -276,7 +276,25 @@ export function WebApp() {
 
   // Derived filter unique categories
   const jobCategories = ['All', 'Central', 'State', 'Railway', 'Banking', 'Defence', 'Police', 'Teaching', 'PSU', 'Judiciary', 'Healthcare', 'Engineering', 'Apprenticeship'];
-  const tenderIndustries = ['All', 'Construction', 'IT', 'Energy', 'Healthcare', 'Education', 'Railways', 'Defence', 'Telecom', 'Smart Cities', 'Agriculture'];
+  const tenderIndustries = [
+    'All',
+    'Infrastructure',
+    'Roads & Highways',
+    'Airports & Aviation',
+    'Railways & Metro',
+    'Power & Energy',
+    'Water Resources',
+    'Healthcare',
+    'Education',
+    'IT & Digital',
+    'Government Buildings',
+    'Defence',
+    'Agriculture',
+    'Urban Development',
+    'Ports & Shipping',
+    'Mining & Oil',
+    'International Tenders'
+  ] as const;
   const fundingSectors = ['All', 'Startup', 'MSME', 'Agriculture', 'Women', 'Students', 'Research', 'Export', 'Manufacturing', 'Innovation'];
 
   // Global search input handling using modular determineGlobalSearchTarget utility
@@ -996,156 +1014,320 @@ export function WebApp() {
         )}
 
         {/* VIEW: GOVERNMENT TENDERS */}
-        {currentView === 'tenders' && !activeTenderDetail && (
-          <div className="space-y-8 animate-fadeIn">
-            {/* Header */}
-            <div className="border-b border-slate-200 pb-5">
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">Government Procurement & Tenders</h1>
-              <p className="text-slate-500 text-sm mt-1">
-                Participate in institutional bidding across 10 major public industrial sectors.
-              </p>
-            </div>
+        {currentView === 'tenders' && !activeTenderDetail && (() => {
+          // Reusable Category Metadata
+          const TENDER_CATEGORY_ICONS: Record<string, string> = {
+            'All': '📋',
+            'Infrastructure': '🏗️',
+            'Roads & Highways': '🛣️',
+            'Airports & Aviation': '✈️',
+            'Railways & Metro': '🚇',
+            'Power & Energy': '⚡',
+            'Water Resources': '💧',
+            'Healthcare': '🏥',
+            'Education': '🎓',
+            'IT & Digital': '💻',
+            'Government Buildings': '🏛️',
+            'Defence': '🛡️',
+            'Agriculture': '🚜',
+            'Urban Development': '🌆',
+            'Ports & Shipping': '🚢',
+            'Mining & Oil': '⛏️',
+            'International Tenders': '🌐'
+          };
 
-            {/* Advanced Filters */}
-            <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-6 gap-3">
-              <div className="relative md:col-span-2">
-                <span className="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Filter tenders..."
-                  value={tenderSearch}
-                  onChange={(e) => { setTenderSearch(e.target.value); setTendersPage(1); }}
-                  className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+          const TENDER_CATEGORY_DESC: Record<string, string> = {
+            'All': 'Explore the master dashboard of global public tenders and procurement projects.',
+            'Infrastructure': 'Engineering, public utility installations, and major civil structure bidding operations.',
+            'Roads & Highways': 'National highway widening, expressway asphalt paving, and regional bypass construction.',
+            'Airports & Aviation': 'Airport baggage conveyor retrofits, runway safety lighting, and radar upgrades.',
+            'Railways & Metro': 'Metro rail track laying, deep underground tunnel boring, and station platform building.',
+            'Power & Energy': 'Decentralized hybrid solar/wind microgrids, sub-station transformer supplies, and smart grid meters.',
+            'Water Resources': 'Water supply filtration beds, canal lining reinforcement, and irrigation distribution networks.',
+            'Healthcare': 'Secure state clinical databases, hospital critical care wing construction, and digital records.',
+            'Education': 'Interactive multi-touch classroom displays, state school system LMS, and educational software.',
+            'IT & Digital': 'Smart transport route optimizers, deep learning fleet dispatch systems, and digital portals.',
+            'Government Buildings': 'Green secretariat administrative offices, public housing, and civic space builds.',
+            'Defence': 'Coastal patrol surveillance S-band radar stations, secure communication transceivers, and telemetry.',
+            'Agriculture': 'High-output DC solar irrigation pump distributions, farming equipment, and modern grain silos.',
+            'Urban Development': 'Municipal broadband trenching, optic fiber cables, and smart city CCTV system networks.',
+            'Ports & Shipping': 'High-capacity container terminal gantry crane infrastructure and port cargo installations.',
+            'Mining & Oil': 'Offshore pipeline anti-corrosive reinforcements, high-pressure natural gas systems, and extractions.',
+            'International Tenders': 'Transnational 400kV electricity connections, cross-border grids, and multilateral programs.'
+          };
+
+          const getCategoryCount = (categoryName: string) => {
+            return tenders.filter(t => t.industry === categoryName).length;
+          };
+
+          return (
+            <div className="space-y-8 animate-fadeIn">
+              {/* Header block with breadcrumbs */}
+              <div className="border-b border-slate-200 pb-5">
+                <nav className="flex space-x-2 text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
+                  <span className="cursor-pointer hover:text-blue-600" onClick={() => { setSelectedTenderIndustry('All'); setTendersPage(1); }}>Tender Platform</span>
+                  <span>/</span>
+                  <span className="text-slate-600">{selectedTenderIndustry === 'All' ? 'Overview' : selectedTenderIndustry}</span>
+                </nav>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center space-x-3">
+                      <span>{TENDER_CATEGORY_ICONS[selectedTenderIndustry]}</span>
+                      <span>{selectedTenderIndustry === 'All' ? 'Procurement Control Center' : `${selectedTenderIndustry} Tenders`}</span>
+                    </h1>
+                    <p className="text-slate-500 text-sm mt-1 max-w-3xl">
+                      {TENDER_CATEGORY_DESC[selectedTenderIndustry]}
+                    </p>
+                  </div>
+                  {selectedTenderIndustry !== 'All' && (
+                    <Button
+                      onClick={() => { setSelectedTenderIndustry('All'); setTendersPage(1); }}
+                      variant="secondary"
+                      className="bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200 whitespace-nowrap self-start md:self-auto shadow-sm"
+                    >
+                      &larr; Back to Dashboard
+                    </Button>
+                  )}
+                </div>
               </div>
 
-              {/* Industry filter */}
-              <div>
-                <select
-                  value={selectedTenderIndustry}
-                  onChange={(e) => { setSelectedTenderIndustry(e.target.value); setTendersPage(1); }}
-                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
-                >
-                  <option value="All">All Industries</option>
-                  {tenderIndustries.slice(1).map((ind) => (
-                    <option key={ind} value={ind}>{ind}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* State filter */}
-              <div>
-                <select
-                  value={selectedTenderState}
-                  onChange={(e) => { setSelectedTenderState(e.target.value); setTendersPage(1); }}
-                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
-                >
-                  {STATES_LIST.map((st) => (
-                    <option key={st} value={st}>{st}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Country filter */}
-              <div>
-                <select
-                  value={selectedTenderCountry}
-                  onChange={(e) => { setSelectedTenderCountry(e.target.value); setTendersPage(1); }}
-                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
-                >
-                  {COUNTRIES_LIST.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Sort Order filter */}
-              <div>
-                <select
-                  value={tenderSort}
-                  onChange={(e) => { setTenderSort(e.target.value as SortOption); setTendersPage(1); }}
-                  className="w-full border border-blue-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50 text-blue-800 font-bold"
-                >
-                  <option value="none">Sort By Default</option>
-                  <option value="deadline-asc">Deadline (Ascending)</option>
-                  <option value="deadline-desc">Deadline (Descending)</option>
-                  <option value="budget-desc">Budget (Highest First)</option>
-                  <option value="budget-asc">Budget (Lowest First)</option>
-                  <option value="title-asc">Alphabetical (A-Z)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Tenders Grid */}
-            {paginatedTenders.length > 0 ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {paginatedTenders.map((tender) => {
-                    return (
-                      <Card key={tender.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80">
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-start gap-2">
-                            <span className="bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
-                              {tender.industry} Bid
+              {/* Sub-navigation Menu bar: Left Sidebar (Desktop) + Horizontal Pill ribbon (Mobile/Tablet) */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+                {/* Navigation panel */}
+                <div className="lg:col-span-1 space-y-4">
+                  {/* Desktop Sidebar (16 categories list) */}
+                  <div className="hidden lg:block bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-1">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-3 mb-3">Tender Industries</h3>
+                    {tenderIndustries.map((ind) => {
+                      const isActive = selectedTenderIndustry === ind;
+                      const bidCount = getCategoryCount(ind);
+                      return (
+                        <button
+                          key={ind}
+                          onClick={() => { setSelectedTenderIndustry(ind); setTendersPage(1); }}
+                          className={`w-full text-left flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                            isActive
+                              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
+                              : 'text-slate-700 hover:bg-slate-50 hover:text-slate-950'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2.5 truncate">
+                            <span className="text-sm">{TENDER_CATEGORY_ICONS[ind]}</span>
+                            <span className="truncate">{ind === 'All' ? 'All Overview' : ind}</span>
+                          </div>
+                          {ind !== 'All' && (
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${
+                              isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                            }`}>
+                              {bidCount}
                             </span>
-                            <span className="text-xs text-slate-400 font-mono font-medium">{tender.referenceNumber}</span>
-                          </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                          <div>
-                            <h3 className="text-lg font-bold text-slate-900 line-clamp-1">{tender.title}</h3>
-                            <p className="text-sm font-semibold text-slate-600 mt-0.5">{tender.authority}</p>
-                            <p className="text-xs text-slate-400 mt-1 flex items-center">
-                              <span className="mr-1">📍</span> {tender.location} ({tender.state})
-                            </p>
-                          </div>
-
-                          <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{tender.description}</p>
-                        </div>
-
-                        <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                          <div>
-                            <span className="text-[10px] text-slate-400 block font-medium uppercase tracking-wider">Estimated Budget</span>
-                            <span className="text-base font-extrabold text-slate-900">{tender.value}</span>
-                          </div>
-
-                          <div className="flex space-x-2">
-                            <Button
-                              onClick={() => { setActiveTenderDetail(tender); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                              className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
-                            >
-                              Explore Details
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                    );
-                  })}
+                  {/* Mobile/Tablet Horizontal Scroll Ribbon list */}
+                  <div className="block lg:hidden bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2 px-1">Select Industry</span>
+                    <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-none">
+                      {tenderIndustries.map((ind) => {
+                        const isActive = selectedTenderIndustry === ind;
+                        const bidCount = getCategoryCount(ind);
+                        return (
+                          <button
+                            key={ind}
+                            onClick={() => { setSelectedTenderIndustry(ind); setTendersPage(1); }}
+                            className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                              isActive
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            }`}
+                          >
+                            <span>{TENDER_CATEGORY_ICONS[ind]}</span>
+                            <span>{ind === 'All' ? 'Overview' : ind}</span>
+                            {ind !== 'All' && (
+                              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-black ${
+                                isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-500'
+                              }`}>
+                                {bidCount}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
 
-                <Pagination
-                  currentPage={tendersPage}
-                  totalItems={filteredAndSortedTenders.length}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                  onPageChange={(page) => setTendersPage(page)}
-                />
+                {/* Main Content Pane (Grid & Filters mapped to active category) */}
+                <div className="lg:col-span-3 space-y-6">
+                  {/* If "All" Overview is active, we display the Dashboard Overview cards plus a sample general list */}
+                  {selectedTenderIndustry === 'All' && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {tenderIndustries.slice(1).map((ind) => {
+                          const bidCount = getCategoryCount(ind);
+                          return (
+                            <Card
+                              key={ind}
+                              className="p-5 border-slate-200/80 hover:shadow-md transition-all cursor-pointer group flex items-start space-x-4 bg-white"
+                              onClick={() => { setSelectedTenderIndustry(ind); setTendersPage(1); }}
+                            >
+                              <div className="bg-blue-50 text-blue-600 w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-sm font-bold group-hover:scale-105 transition-transform shrink-0">
+                                {TENDER_CATEGORY_ICONS[ind]}
+                              </div>
+                              <div className="space-y-1.5 flex-grow min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <h3 className="font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors text-sm truncate">{ind}</h3>
+                                  <span className="bg-blue-50 text-blue-800 text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                                    {bidCount} Live Bids
+                                  </span>
+                                </div>
+                                <p className="text-slate-500 text-xs leading-relaxed line-clamp-2">
+                                  {TENDER_CATEGORY_DESC[ind]}
+                                </p>
+                              </div>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* If specific category or list display of active items is rendering */}
+                  <div className="space-y-6">
+                    {/* Advanced Filters block mapping category selection */}
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-5 gap-3">
+                      {/* Category-scoped Search input */}
+                      <div className="relative md:col-span-2">
+                        <span className="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
+                        <input
+                          type="text"
+                          placeholder={selectedTenderIndustry === 'All' ? "Search across all categories..." : `Search inside ${selectedTenderIndustry}...`}
+                          value={tenderSearch}
+                          onChange={(e) => { setTenderSearch(e.target.value); setTendersPage(1); }}
+                          className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* State filter */}
+                      <div>
+                        <select
+                          value={selectedTenderState}
+                          onChange={(e) => { setSelectedTenderState(e.target.value); setTendersPage(1); }}
+                          className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                        >
+                          {STATES_LIST.map((st) => (
+                            <option key={st} value={st}>{st}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Country filter */}
+                      <div>
+                        <select
+                          value={selectedTenderCountry}
+                          onChange={(e) => { setSelectedTenderCountry(e.target.value); setTendersPage(1); }}
+                          className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                        >
+                          {COUNTRIES_LIST.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Sort Order filter */}
+                      <div>
+                        <select
+                          value={tenderSort}
+                          onChange={(e) => { setTenderSort(e.target.value as SortOption); setTendersPage(1); }}
+                          className="w-full border border-blue-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50 text-blue-800 font-bold"
+                        >
+                          <option value="none">Sort By Default</option>
+                          <option value="deadline-asc">Deadline (Ascending)</option>
+                          <option value="deadline-desc">Deadline (Descending)</option>
+                          <option value="budget-desc">Budget (Highest First)</option>
+                          <option value="budget-asc">Budget (Lowest First)</option>
+                          <option value="title-asc">Alphabetical (A-Z)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Responsive Tenders Card Grid */}
+                    {paginatedTenders.length > 0 ? (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
+                          {paginatedTenders.map((tender) => {
+                            return (
+                              <Card key={tender.id} className="hover:shadow-md transition-all flex flex-col justify-between border-slate-200/80 bg-white p-5">
+                                <div className="space-y-4">
+                                  <div className="flex justify-between items-start gap-2">
+                                    <span className="bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+                                      {TENDER_CATEGORY_ICONS[tender.industry] || '📋'} {tender.industry}
+                                    </span>
+                                    <span className="text-xs text-slate-400 font-mono font-medium">{tender.referenceNumber}</span>
+                                  </div>
+
+                                  <div>
+                                    <h3 className="text-base font-extrabold text-slate-900 line-clamp-1">{tender.title}</h3>
+                                    <p className="text-xs font-bold text-slate-600 mt-1">{tender.authority}</p>
+                                    <p className="text-[10px] font-medium text-slate-400 mt-1 flex items-center">
+                                      <span className="mr-1">📍</span> {tender.location} ({tender.state})
+                                    </p>
+                                  </div>
+
+                                  <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{tender.description}</p>
+                                </div>
+
+                                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                                  <div>
+                                    <span className="text-[9px] text-slate-400 block font-semibold uppercase tracking-wider">Estimated Budget</span>
+                                    <span className="text-sm font-black text-slate-950">{tender.value}</span>
+                                  </div>
+
+                                  <div className="flex space-x-2">
+                                    <Button
+                                      onClick={() => { setActiveTenderDetail(tender); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                      className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg shadow-sm"
+                                    >
+                                      Explore Details
+                                    </Button>
+                                  </div>
+                                </div>
+                              </Card>
+                            );
+                          })}
+                        </div>
+
+                        <Pagination
+                          currentPage={tendersPage}
+                          totalItems={filteredAndSortedTenders.length}
+                          itemsPerPage={ITEMS_PER_PAGE}
+                          onPageChange={(page) => setTendersPage(page)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="bg-white rounded-xl border border-slate-200 text-center py-12 px-4 shadow-sm">
+                        <span className="text-4xl block mb-2">📋</span>
+                        <h3 className="font-bold text-slate-950 text-base">No active procurement tenders</h3>
+                        <p className="text-slate-500 text-sm mt-1 max-w-sm mx-auto">
+                          No tenders match your current lookup criteria for {selectedTenderIndustry}. Try checking search keywords or select different filters.
+                        </p>
+                        <Button
+                          onClick={() => { setTenderSearch(''); setSelectedTenderIndustry('All'); setSelectedTenderState('All States'); setSelectedTenderCountry('All Countries'); setSelectedTenderStatus('All'); setTenderSort('none'); setTendersPage(1); }}
+                          className="mt-4 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
+                        >
+                          Reset All Filters
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className="bg-white rounded-xl border border-slate-200 text-center py-12 px-4 shadow-sm">
-                <span className="text-4xl block mb-2">📄</span>
-                <h3 className="font-bold text-slate-950 text-base">No active procurement tenders</h3>
-                <p className="text-slate-500 text-sm mt-1 max-w-sm mx-auto">
-                  No tenders match your current lookup criteria. Try checking industrial classifications or select different states.
-                </p>
-                <Button
-                  onClick={() => { setTenderSearch(''); setSelectedTenderIndustry('All'); setSelectedTenderState('All States'); setSelectedTenderCountry('All Countries'); setSelectedTenderStatus('All'); setTenderSort('none'); setTendersPage(1); }}
-                  className="mt-4 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  Reset All Filters
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
+            </div>
+          );
+        })()}
 
         {/* VIEW: GOVERNMENT TENDERS DETAIL PAGE */}
         {currentView === 'tenders' && activeTenderDetail && (
