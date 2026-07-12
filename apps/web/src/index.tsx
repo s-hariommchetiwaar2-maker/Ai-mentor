@@ -13,6 +13,7 @@ import {
 // Import Mock Data Layer
 import {
   STATES_LIST,
+  COUNTRIES_LIST,
   MOCK_JOBS as INITIAL_JOBS,
   MOCK_TENDERS as INITIAL_TENDERS,
   MOCK_FUNDING as INITIAL_FUNDING
@@ -27,9 +28,13 @@ import { contactService } from './services/contactService.js';
 // Import Utility Matchers
 import {
   filterJobs,
+  sortJobs,
   filterTenders,
+  sortTenders,
   filterFunding,
-  determineGlobalSearchTarget
+  sortFunding,
+  determineGlobalSearchTarget,
+  SortOption
 } from './utils/searchUtils.js';
 
 // -----------------------------------------------------------------------------
@@ -132,20 +137,29 @@ export function WebApp() {
   const [tenders, setTenders] = useState<TenderListing[]>(INITIAL_TENDERS);
   const [fundingSchemes, setFundingSchemes] = useState<FundingScheme[]>(INITIAL_FUNDING);
 
-  // Government Jobs page specific states
+  // Advanced Multi-Filters: Government Jobs page
   const [selectedJobCategory, setSelectedJobCategory] = useState<string>('All');
   const [selectedJobState, setSelectedJobState] = useState<string>('All States');
+  const [selectedJobCountry, setSelectedJobCountry] = useState<string>('All Countries');
+  const [selectedJobStatus, setSelectedJobStatus] = useState<string>('All');
   const [jobSearch, setJobSearch] = useState<string>('');
+  const [jobSort, setJobSort] = useState<SortOption>('none');
 
-  // Government Tenders page specific states
+  // Advanced Multi-Filters: Government Tenders page
   const [selectedTenderIndustry, setSelectedTenderIndustry] = useState<string>('All');
   const [selectedTenderState, setSelectedTenderState] = useState<string>('All States');
+  const [selectedTenderCountry, setSelectedTenderCountry] = useState<string>('All Countries');
+  const [selectedTenderStatus, setSelectedTenderStatus] = useState<string>('All');
   const [tenderSearch, setTenderSearch] = useState<string>('');
+  const [tenderSort, setTenderSort] = useState<SortOption>('none');
 
-  // Government Funding page specific states
+  // Advanced Multi-Filters: Government Funding page
   const [selectedFundingSector, setSelectedFundingSector] = useState<string>('All');
   const [selectedFundingState, setSelectedFundingState] = useState<string>('All States');
+  const [selectedFundingCountry, setSelectedFundingCountry] = useState<string>('All Countries');
+  const [selectedFundingStatus, setSelectedFundingStatus] = useState<string>('All');
   const [fundingSearch, setFundingSearch] = useState<string>('');
+  const [fundingSort, setFundingSort] = useState<SortOption>('none');
 
   // Contact form state
   const [contactForm, setContactForm] = useState<ContactInquiry>({
@@ -202,34 +216,37 @@ export function WebApp() {
     };
   }, []);
 
-  // Filter listings dynamically using modular searchUtils
-  const filteredJobs = useMemo(() => {
-    return filterJobs(jobs, jobSearch, selectedJobCategory, selectedJobState);
-  }, [jobs, jobSearch, selectedJobCategory, selectedJobState]);
+  // Filter and sort listings dynamically using modular searchUtils
+  const filteredAndSortedJobs = useMemo(() => {
+    const filtered = filterJobs(jobs, jobSearch, selectedJobCategory, selectedJobState, selectedJobCountry, selectedJobStatus);
+    return sortJobs(filtered, jobSort);
+  }, [jobs, jobSearch, selectedJobCategory, selectedJobState, selectedJobCountry, selectedJobStatus, jobSort]);
 
-  const filteredTenders = useMemo(() => {
-    return filterTenders(tenders, tenderSearch, selectedTenderIndustry, selectedTenderState);
-  }, [tenders, tenderSearch, selectedTenderIndustry, selectedTenderState]);
+  const filteredAndSortedTenders = useMemo(() => {
+    const filtered = filterTenders(tenders, tenderSearch, selectedTenderIndustry, selectedTenderState, selectedTenderCountry, selectedTenderStatus);
+    return sortTenders(filtered, tenderSort);
+  }, [tenders, tenderSearch, selectedTenderIndustry, selectedTenderState, selectedTenderCountry, selectedTenderStatus, tenderSort]);
 
-  const filteredFunding = useMemo(() => {
-    return filterFunding(fundingSchemes, fundingSearch, selectedFundingSector, selectedFundingState);
-  }, [fundingSchemes, fundingSearch, selectedFundingSector, selectedFundingState]);
+  const filteredAndSortedFunding = useMemo(() => {
+    const filtered = filterFunding(fundingSchemes, fundingSearch, selectedFundingSector, selectedFundingState, selectedFundingCountry, selectedFundingStatus);
+    return sortFunding(filtered, fundingSort);
+  }, [fundingSchemes, fundingSearch, selectedFundingSector, selectedFundingState, selectedFundingCountry, selectedFundingStatus, fundingSort]);
 
   // Paginated items
   const paginatedJobs = useMemo(() => {
     const startIndex = (jobsPage - 1) * ITEMS_PER_PAGE;
-    return filteredJobs.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredJobs, jobsPage]);
+    return filteredAndSortedJobs.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredAndSortedJobs, jobsPage]);
 
   const paginatedTenders = useMemo(() => {
     const startIndex = (tendersPage - 1) * ITEMS_PER_PAGE;
-    return filteredTenders.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredTenders, tendersPage]);
+    return filteredAndSortedTenders.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredAndSortedTenders, tendersPage]);
 
   const paginatedFunding = useMemo(() => {
     const startIndex = (fundingPage - 1) * ITEMS_PER_PAGE;
-    return filteredFunding.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredFunding, fundingPage]);
+    return filteredAndSortedFunding.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredAndSortedFunding, fundingPage]);
 
   // Derived filter unique categories
   const jobCategories = ['All', 'Central', 'State', 'Railway', 'Banking', 'Defence', 'Police', 'Teaching', 'PSU', 'Judiciary', 'Healthcare', 'Engineering', 'Apprenticeship'];
@@ -267,7 +284,6 @@ export function WebApp() {
     }
     setContactError('');
 
-    // Connect to contact simulated service
     try {
       const response = await contactService.submitInquiry(contactForm);
       if (response.success) {
@@ -287,7 +303,7 @@ export function WebApp() {
         setHasApplied((prev) => ({ ...prev, [listingId]: true }));
       }
     } catch {
-      // Gracefully handle promise rejection in testing
+      // Gracefully handle promise rejection
     }
   };
 
@@ -298,7 +314,7 @@ export function WebApp() {
         setSubmittedBids((prev) => ({ ...prev, [tenderId]: true }));
       }
     } catch {
-      // Gracefully handle promise rejection in testing
+      // Gracefully handle promise rejection
     }
   };
 
@@ -309,7 +325,7 @@ export function WebApp() {
         setAppliedGrants((prev) => ({ ...prev, [fundId]: true }));
       }
     } catch {
-      // Gracefully handle promise rejection in testing
+      // Gracefully handle promise rejection
     }
   };
 
@@ -619,52 +635,72 @@ export function WebApp() {
             </div>
 
             {/* Advanced Filters */}
-            <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-6 gap-3">
               {/* Keyword input */}
               <div className="relative md:col-span-2">
                 <span className="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
                 <input
                   type="text"
-                  placeholder="Filter jobs by title, department, keyword..."
+                  placeholder="Filter jobs..."
                   value={jobSearch}
                   onChange={(e) => { setJobSearch(e.target.value); setJobsPage(1); }}
                   className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                {jobSearch && (
-                  <button onClick={() => { setJobSearch(''); setJobsPage(1); }} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs">
-                    Clear
-                  </button>
-                )}
               </div>
 
-              {/* Sector classification filter */}
+              {/* Category selector */}
               <div>
                 <select
                   value={selectedJobCategory}
                   onChange={(e) => { setSelectedJobCategory(e.target.value); setJobsPage(1); }}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700 font-medium"
                 >
-                  <option value="All">All Sectors</option>
+                  <option value="All">All Categories</option>
                   {jobCategories.slice(1).map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat} Sector
-                    </option>
+                    <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
               </div>
 
-              {/* State-based filter */}
+              {/* State filter */}
               <div>
                 <select
                   value={selectedJobState}
                   onChange={(e) => { setSelectedJobState(e.target.value); setJobsPage(1); }}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700 font-medium"
                 >
                   {STATES_LIST.map((st) => (
-                    <option key={st} value={st}>
-                      {st}
-                    </option>
+                    <option key={st} value={st}>{st}</option>
                   ))}
+                </select>
+              </div>
+
+              {/* Country filter */}
+              <div>
+                <select
+                  value={selectedJobCountry}
+                  onChange={(e) => { setSelectedJobCountry(e.target.value); setJobsPage(1); }}
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700 font-medium"
+                >
+                  {COUNTRIES_LIST.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort Order filter */}
+              <div>
+                <select
+                  value={jobSort}
+                  onChange={(e) => { setJobSort(e.target.value as SortOption); setJobsPage(1); }}
+                  className="w-full border border-blue-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50 text-blue-800 font-bold"
+                >
+                  <option value="none">Sort By Default</option>
+                  <option value="deadline-asc">Deadline (Ascending)</option>
+                  <option value="deadline-desc">Deadline (Descending)</option>
+                  <option value="budget-desc">Salary (Highest First)</option>
+                  <option value="budget-asc">Salary (Lowest First)</option>
+                  <option value="title-asc">Alphabetical (A-Z)</option>
                 </select>
               </div>
             </div>
@@ -690,7 +726,7 @@ export function WebApp() {
                         <div>
                           <h3 className="text-lg font-bold text-slate-900 line-clamp-1">{job.title}</h3>
                           <p className="text-sm font-semibold text-slate-600 mt-0.5">{job.agency}</p>
-                          <p className="text-xs font-medium text-slate-400 mt-1">{job.department}</p>
+                          <p className="text-xs font-medium text-slate-400 mt-1">{job.department} ({job.ministry})</p>
                         </div>
                         <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{job.description}</p>
                       </div>
@@ -703,14 +739,12 @@ export function WebApp() {
                         <div className="flex space-x-2">
                           <Button
                             onClick={() => setActiveJobDetail(job)}
-                            variant="secondary"
                             className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
                           >
                             Requirements
                           </Button>
                           <Button
                             onClick={() => handleApplyAction(job.id)}
-                            variant="primary"
                             className={`px-4 py-1.5 text-xs font-bold rounded ${
                               hasApplied[job.id]
                                 ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
@@ -727,7 +761,7 @@ export function WebApp() {
 
                 <Pagination
                   currentPage={jobsPage}
-                  totalItems={filteredJobs.length}
+                  totalItems={filteredAndSortedJobs.length}
                   itemsPerPage={ITEMS_PER_PAGE}
                   onPageChange={(page) => setJobsPage(page)}
                 />
@@ -740,9 +774,8 @@ export function WebApp() {
                   Try adjusting your search terms, sector filters, or state settings to see more available career listings.
                 </p>
                 <Button
-                  onClick={() => { setJobSearch(''); setSelectedJobCategory('All'); setSelectedJobState('All States'); setJobsPage(1); }}
-                  variant="secondary"
-                  className="mt-4 text-xs font-bold"
+                  onClick={() => { setJobSearch(''); setSelectedJobCategory('All'); setSelectedJobState('All States'); setSelectedJobCountry('All Countries'); setSelectedJobStatus('All'); setJobSort('none'); setJobsPage(1); }}
+                  className="mt-4 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700"
                 >
                   Reset All Filters
                 </Button>
@@ -751,7 +784,7 @@ export function WebApp() {
 
             {/* Requirements Inspect Modal */}
             {activeJobDetail && (
-              <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
                 <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scaleUp space-y-5">
                   <div className="flex justify-between items-start border-b border-slate-100 pb-4">
                     <div>
@@ -775,6 +808,11 @@ export function WebApp() {
                       <p className="leading-relaxed text-xs">{activeJobDetail.description}</p>
                     </div>
 
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-slate-900 text-xs">Department Classification:</h4>
+                      <p className="leading-relaxed text-xs">{activeJobDetail.department} ({activeJobDetail.ministry})</p>
+                    </div>
+
                     <div className="space-y-2">
                       <h4 className="font-bold text-slate-900">Applicant Requirements:</h4>
                       <ul className="list-disc list-inside space-y-1 text-xs">
@@ -790,8 +828,8 @@ export function WebApp() {
                         <span className="font-bold text-slate-800">{activeJobDetail.salaryRange}</span>
                       </div>
                       <div>
-                        <span className="text-slate-400 block font-medium">State & location</span>
-                        <span className="font-bold text-slate-800">{activeJobDetail.location} ({activeJobDetail.state})</span>
+                        <span className="text-slate-400 block font-medium">State & country</span>
+                        <span className="font-bold text-slate-800">{activeJobDetail.location} ({activeJobDetail.state}, {activeJobDetail.country})</span>
                       </div>
                     </div>
                   </div>
@@ -799,14 +837,12 @@ export function WebApp() {
                   <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                     <Button
                       onClick={() => setActiveJobDetail(null)}
-                      variant="secondary"
                       className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200"
                     >
                       Close Details
                     </Button>
                     <Button
                       onClick={() => { handleApplyAction(activeJobDetail.id); setActiveJobDetail(null); }}
-                      variant="primary"
                       className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded"
                     >
                       {hasApplied[activeJobDetail.id] ? '✓ Applied' : 'Apply Now'}
@@ -830,51 +866,71 @@ export function WebApp() {
             </div>
 
             {/* Advanced Filters */}
-            <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-6 gap-3">
               <div className="relative md:col-span-2">
                 <span className="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
                 <input
                   type="text"
-                  placeholder="Filter tenders by title, authority, reference ID..."
+                  placeholder="Filter tenders..."
                   value={tenderSearch}
                   onChange={(e) => { setTenderSearch(e.target.value); setTendersPage(1); }}
                   className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                {tenderSearch && (
-                  <button onClick={() => { setTenderSearch(''); setTendersPage(1); }} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs">
-                    Clear
-                  </button>
-                )}
               </div>
 
-              {/* Industry classification filter */}
+              {/* Industry filter */}
               <div>
                 <select
                   value={selectedTenderIndustry}
                   onChange={(e) => { setSelectedTenderIndustry(e.target.value); setTendersPage(1); }}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
                 >
                   <option value="All">All Industries</option>
                   {tenderIndustries.slice(1).map((ind) => (
-                    <option key={ind} value={ind}>
-                      {ind} Industry
-                    </option>
+                    <option key={ind} value={ind}>{ind}</option>
                   ))}
                 </select>
               </div>
 
-              {/* State-based filter */}
+              {/* State filter */}
               <div>
                 <select
                   value={selectedTenderState}
                   onChange={(e) => { setSelectedTenderState(e.target.value); setTendersPage(1); }}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
                 >
                   {STATES_LIST.map((st) => (
-                    <option key={st} value={st}>
-                      {st}
-                    </option>
+                    <option key={st} value={st}>{st}</option>
                   ))}
+                </select>
+              </div>
+
+              {/* Country filter */}
+              <div>
+                <select
+                  value={selectedTenderCountry}
+                  onChange={(e) => { setSelectedTenderCountry(e.target.value); setTendersPage(1); }}
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                >
+                  {COUNTRIES_LIST.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort Order filter */}
+              <div>
+                <select
+                  value={tenderSort}
+                  onChange={(e) => { setTenderSort(e.target.value as SortOption); setTendersPage(1); }}
+                  className="w-full border border-blue-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50 text-blue-800 font-bold"
+                >
+                  <option value="none">Sort By Default</option>
+                  <option value="deadline-asc">Deadline (Ascending)</option>
+                  <option value="deadline-desc">Deadline (Descending)</option>
+                  <option value="budget-desc">Budget (Highest First)</option>
+                  <option value="budget-asc">Budget (Lowest First)</option>
+                  <option value="title-asc">Alphabetical (A-Z)</option>
                 </select>
               </div>
             </div>
@@ -901,7 +957,7 @@ export function WebApp() {
                             <h3 className="text-lg font-bold text-slate-900 line-clamp-1">{tender.title}</h3>
                             <p className="text-sm font-semibold text-slate-600 mt-0.5">{tender.authority}</p>
                             <p className="text-xs text-slate-400 mt-1 flex items-center">
-                              <span className="mr-1">📍</span> {tender.location}
+                              <span className="mr-1">📍</span> {tender.location} ({tender.state})
                             </p>
                           </div>
 
@@ -917,14 +973,12 @@ export function WebApp() {
                           <div className="flex space-x-2">
                             <Button
                               onClick={() => setActiveTenderDetail(tender)}
-                              variant="secondary"
                               className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
                             >
                               Details
                             </Button>
                             <Button
                               onClick={() => isOpen && handleTenderBidSubmit(tender.id)}
-                              variant="primary"
                               disabled={!isOpen || isSubmitted}
                               className={`px-4 py-1.5 text-xs font-bold rounded ${
                                 isSubmitted
@@ -945,7 +999,7 @@ export function WebApp() {
 
                 <Pagination
                   currentPage={tendersPage}
-                  totalItems={filteredTenders.length}
+                  totalItems={filteredAndSortedTenders.length}
                   itemsPerPage={ITEMS_PER_PAGE}
                   onPageChange={(page) => setTendersPage(page)}
                 />
@@ -958,9 +1012,8 @@ export function WebApp() {
                   No tenders match your current lookup criteria. Try checking industrial classifications or select different states.
                 </p>
                 <Button
-                  onClick={() => { setTenderSearch(''); setSelectedTenderIndustry('All'); setSelectedTenderState('All States'); setTendersPage(1); }}
-                  variant="secondary"
-                  className="mt-4 text-xs font-bold"
+                  onClick={() => { setTenderSearch(''); setSelectedTenderIndustry('All'); setSelectedTenderState('All States'); setSelectedTenderCountry('All Countries'); setSelectedTenderStatus('All'); setTenderSort('none'); setTendersPage(1); }}
+                  className="mt-4 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700"
                 >
                   Reset All Filters
                 </Button>
@@ -969,7 +1022,7 @@ export function WebApp() {
 
             {/* Tender Detail Inspect Modal */}
             {activeTenderDetail && (
-              <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
                 <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scaleUp space-y-5">
                   <div className="flex justify-between items-start border-b border-slate-100 pb-4">
                     <div>
@@ -993,6 +1046,11 @@ export function WebApp() {
                       <p className="leading-relaxed text-xs">{activeTenderDetail.description}</p>
                     </div>
 
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-slate-900 text-xs">Department Classification:</h4>
+                      <p className="leading-relaxed text-xs">{activeTenderDetail.department} ({activeTenderDetail.ministry})</p>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl text-xs">
                       <div>
                         <span className="text-slate-400 block font-medium">Estimated Value</span>
@@ -1008,7 +1066,7 @@ export function WebApp() {
                       </div>
                       <div>
                         <span className="text-slate-400 block font-medium">Site Location</span>
-                        <span className="font-bold text-slate-800">{activeTenderDetail.location} ({activeTenderDetail.state})</span>
+                        <span className="font-bold text-slate-800">{activeTenderDetail.location} ({activeTenderDetail.state}, {activeTenderDetail.country})</span>
                       </div>
                     </div>
                   </div>
@@ -1016,7 +1074,6 @@ export function WebApp() {
                   <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                     <Button
                       onClick={() => setActiveTenderDetail(null)}
-                      variant="secondary"
                       className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200"
                     >
                       Close Details
@@ -1024,7 +1081,6 @@ export function WebApp() {
                     <Button
                       disabled={activeTenderDetail.status !== 'Open' || submittedBids[activeTenderDetail.id]}
                       onClick={() => { handleTenderBidSubmit(activeTenderDetail.id); setActiveTenderDetail(null); }}
-                      variant="primary"
                       className={`px-5 py-2 text-xs font-bold rounded ${
                         submittedBids[activeTenderDetail.id]
                           ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
@@ -1054,21 +1110,16 @@ export function WebApp() {
             </div>
 
             {/* Advanced Filters */}
-            <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-6 gap-3">
               <div className="relative md:col-span-2">
                 <span className="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
                 <input
                   type="text"
-                  placeholder="Filter grants by scheme name, ministry, description keyword..."
+                  placeholder="Filter grants..."
                   value={fundingSearch}
                   onChange={(e) => { setFundingSearch(e.target.value); setFundingPage(1); }}
                   className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                {fundingSearch && (
-                  <button onClick={() => { setFundingSearch(''); setFundingPage(1); }} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs">
-                    Clear
-                  </button>
-                )}
               </div>
 
               {/* Class Sector classification filter */}
@@ -1076,13 +1127,11 @@ export function WebApp() {
                 <select
                   value={selectedFundingSector}
                   onChange={(e) => { setSelectedFundingSector(e.target.value); setFundingPage(1); }}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
                 >
                   <option value="All">All Sectors</option>
                   {fundingSectors.slice(1).map((sector) => (
-                    <option key={sector} value={sector}>
-                      {sector} Schemes
-                    </option>
+                    <option key={sector} value={sector}>{sector} Schemes</option>
                   ))}
                 </select>
               </div>
@@ -1092,13 +1141,40 @@ export function WebApp() {
                 <select
                   value={selectedFundingState}
                   onChange={(e) => { setSelectedFundingState(e.target.value); setFundingPage(1); }}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
                 >
                   {STATES_LIST.map((st) => (
-                    <option key={st} value={st}>
-                      {st}
-                    </option>
+                    <option key={st} value={st}>{st}</option>
                   ))}
+                </select>
+              </div>
+
+              {/* Country filter */}
+              <div>
+                <select
+                  value={selectedFundingCountry}
+                  onChange={(e) => { setSelectedFundingCountry(e.target.value); setFundingPage(1); }}
+                  className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                >
+                  {COUNTRIES_LIST.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort Order filter */}
+              <div>
+                <select
+                  value={fundingSort}
+                  onChange={(e) => { setFundingSort(e.target.value as SortOption); setFundingPage(1); }}
+                  className="w-full border border-blue-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50 text-blue-800 font-bold"
+                >
+                  <option value="none">Sort By Default</option>
+                  <option value="deadline-asc">Deadline (Ascending)</option>
+                  <option value="deadline-desc">Deadline (Descending)</option>
+                  <option value="budget-desc">Grant Size (Highest First)</option>
+                  <option value="budget-asc">Grant Size (Lowest First)</option>
+                  <option value="title-asc">Alphabetical (A-Z)</option>
                 </select>
               </div>
             </div>
@@ -1137,14 +1213,12 @@ export function WebApp() {
                             <div className="flex space-x-1.5">
                               <Button
                                 onClick={() => setActiveFundingDetail(fund)}
-                                variant="secondary"
                                 className="px-2.5 py-1.5 text-[10px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
                               >
                                 Benefits
                               </Button>
                               <Button
                                 onClick={() => handleGrantApplySubmit(fund.id)}
-                                variant="primary"
                                 className={`px-3 py-1.5 text-[10px] font-bold rounded ${
                                   isApplied
                                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
@@ -1163,7 +1237,7 @@ export function WebApp() {
 
                 <Pagination
                   currentPage={fundingPage}
-                  totalItems={filteredFunding.length}
+                  totalItems={filteredAndSortedFunding.length}
                   itemsPerPage={ITEMS_PER_PAGE}
                   onPageChange={(page) => setFundingPage(page)}
                 />
@@ -1176,9 +1250,8 @@ export function WebApp() {
                   We currently do not have funding initiatives matching that keyword. Try resetting filters to view all classes.
                 </p>
                 <Button
-                  onClick={() => { setFundingSearch(''); setSelectedFundingSector('All'); setSelectedFundingState('All States'); setFundingPage(1); }}
-                  variant="secondary"
-                  className="mt-4 text-xs font-bold"
+                  onClick={() => { setFundingSearch(''); setSelectedFundingSector('All'); setSelectedFundingState('All States'); setSelectedFundingCountry('All Countries'); setSelectedFundingStatus('All'); setFundingSort('none'); setFundingPage(1); }}
+                  className="mt-4 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700"
                 >
                   Reset All Filters
                 </Button>
@@ -1187,7 +1260,7 @@ export function WebApp() {
 
             {/* Funding Scheme Benefits Modal */}
             {activeFundingDetail && (
-              <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
                 <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scaleUp space-y-5">
                   <div className="flex justify-between items-start border-b border-slate-100 pb-4">
                     <div>
@@ -1231,14 +1304,12 @@ export function WebApp() {
                   <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                     <Button
                       onClick={() => setActiveFundingDetail(null)}
-                      variant="secondary"
                       className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200"
                     >
                       Close Details
                     </Button>
                     <Button
                       onClick={() => { handleGrantApplySubmit(activeFundingDetail.id); setActiveFundingDetail(null); }}
-                      variant="primary"
                       className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded"
                     >
                       {appliedGrants[activeFundingDetail.id] ? '✓ Enrolled' : 'Apply Scheme'}
@@ -1314,8 +1385,7 @@ export function WebApp() {
                       </p>
                       <Button
                         onClick={() => setContactSuccess(false)}
-                        variant="secondary"
-                        className="text-[10px] font-bold mt-2"
+                        className="text-[10px] font-bold mt-2 text-slate-700 bg-slate-100 hover:bg-slate-200"
                       >
                         Submit Another Message
                       </Button>
@@ -1414,9 +1484,9 @@ export function WebApp() {
             <div>
               <h4 className="text-white text-sm font-bold mb-4 uppercase tracking-wider">Quick Actions</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => { setCurrentView('jobs'); setJobSearch(''); setSelectedJobCategory('All'); setSelectedJobState('All States'); setJobsPage(1); }} className="hover:text-white transition-colors">Search Jobs</button></li>
-                <li><button onClick={() => { setCurrentView('tenders'); setTenderSearch(''); setSelectedTenderIndustry('All'); setSelectedTenderState('All States'); setTendersPage(1); }} className="hover:text-white transition-colors">Review Bids</button></li>
-                <li><button onClick={() => { setCurrentView('funding'); setFundingSearch(''); setSelectedFundingSector('All'); setSelectedFundingState('All States'); setFundingPage(1); }} className="hover:text-white transition-colors">Apply for Funding</button></li>
+                <li><button onClick={() => { setCurrentView('jobs'); setJobSearch(''); setSelectedJobCategory('All'); setSelectedJobState('All States'); setSelectedJobCountry('All Countries'); setSelectedJobStatus('All'); setJobSort('none'); setJobsPage(1); }} className="hover:text-white transition-colors">Search Jobs</button></li>
+                <li><button onClick={() => { setCurrentView('tenders'); setTenderSearch(''); setSelectedTenderIndustry('All'); setSelectedTenderState('All States'); setSelectedTenderCountry('All Countries'); setSelectedTenderStatus('All'); setTenderSort('none'); setTendersPage(1); }} className="hover:text-white transition-colors">Review Bids</button></li>
+                <li><button onClick={() => { setCurrentView('funding'); setFundingSearch(''); setSelectedFundingSector('All'); setSelectedFundingState('All States'); setSelectedFundingCountry('All Countries'); setSelectedFundingStatus('All'); setFundingSort('none'); setFundingPage(1); }} className="hover:text-white transition-colors">Apply for Funding</button></li>
                 <li><button onClick={() => setCurrentView('contact')} className="hover:text-white transition-colors">Contact Center</button></li>
               </ul>
             </div>
