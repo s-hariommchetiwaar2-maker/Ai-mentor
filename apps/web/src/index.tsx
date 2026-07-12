@@ -1,519 +1,40 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button, Card } from '@ai-mentor/shared-ui';
 
-// -----------------------------------------------------------------------------
-// Interfaces & Types
-// -----------------------------------------------------------------------------
-export type PageView = 'home' | 'jobs' | 'tenders' | 'funding' | 'contact';
+// Import Types
+import {
+  PageView,
+  JobListing,
+  TenderListing,
+  FundingScheme,
+  ContactInquiry
+} from './types/index.js';
 
-export interface JobListing {
-  id: string;
-  title: string;
-  agency: string;
-  department: string;
-  location: string;
-  state: string;
-  salaryRange: string;
-  type: 'Full-time' | 'Part-time' | 'Contract' | 'Remote' | 'Apprenticeship';
-  category: 'Central' | 'State' | 'Railway' | 'Banking' | 'Defence' | 'Police' | 'Teaching' | 'PSU' | 'Judiciary' | 'Healthcare' | 'Engineering' | 'Apprenticeship';
-  deadline: string;
-  description: string;
-  requirements: string[];
-}
+// Import Mock Data Layer
+import {
+  STATES_LIST,
+  MOCK_JOBS as INITIAL_JOBS,
+  MOCK_TENDERS as INITIAL_TENDERS,
+  MOCK_FUNDING as INITIAL_FUNDING
+} from './data/mockData.js';
 
-export interface TenderListing {
-  id: string;
-  title: string;
-  authority: string;
-  department: string;
-  referenceNumber: string;
-  value: string;
-  deadline: string;
-  publishedDate: string;
-  location: string;
-  state: string;
-  industry: 'Construction' | 'IT' | 'Energy' | 'Healthcare' | 'Education' | 'Railways' | 'Defence' | 'Telecom' | 'Smart Cities' | 'Agriculture';
-  status: 'Open' | 'Under Evaluation' | 'Awarded' | 'Closed';
-  description: string;
-}
+// Import Service Layer API connectors
+import { jobsService } from './services/jobsService.js';
+import { tendersService } from './services/tendersService.js';
+import { fundingService } from './services/fundingService.js';
+import { contactService } from './services/contactService.js';
 
-export interface FundingScheme {
-  id: string;
-  title: string;
-  ministry: string;
-  department: string;
-  amount: string;
-  eligibility: string;
-  state: string;
-  sector: 'Startup' | 'MSME' | 'Agriculture' | 'Women' | 'Students' | 'Research' | 'Export' | 'Manufacturing' | 'Innovation';
-  description: string;
-  benefits: string[];
-}
-
-export interface ContactInquiry {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}
+// Import Utility Matchers
+import {
+  filterJobs,
+  filterTenders,
+  filterFunding,
+  determineGlobalSearchTarget
+} from './utils/searchUtils.js';
 
 // -----------------------------------------------------------------------------
-// Expanded Mock Database
-// -----------------------------------------------------------------------------
-export const MOCK_JOBS: JobListing[] = [
-  {
-    id: 'job-1',
-    title: 'Senior Cloud Solutions Architect',
-    agency: 'National Informatics Centre (NIC)',
-    department: 'Ministry of Electronics & IT',
-    location: 'New Delhi, Delhi',
-    state: 'Delhi',
-    salaryRange: '$110,000 - $145,000 / Year',
-    type: 'Full-time',
-    category: 'Central',
-    deadline: '2026-08-31',
-    description: 'Lead the design and migration of public service applications to secure gov-cloud environments.',
-    requirements: ['10+ years experience in software engineering', 'Expertise in Kubernetes and secure cloud VPC architecture', 'Prior work with large-scale governmental or enterprise databases'],
-  },
-  {
-    id: 'job-2',
-    title: 'Environmental Research Associate',
-    agency: 'Ministry of Environment, Forest and Climate Change',
-    department: 'Department of Forest Policy',
-    location: 'Dehradun, Uttarakhand',
-    state: 'Uttarakhand',
-    salaryRange: '$65,000 - $80,000 / Year',
-    type: 'Contract',
-    category: 'State',
-    deadline: '2026-09-15',
-    description: 'Conduct comprehensive ecological impact assessments and gather statistical data for forest conservation policies.',
-    requirements: ['Master’s degree in Environmental Science or related discipline', 'Experience conducting field research and writing analytical briefs', 'Proficiency in GIS mapping tools'],
-  },
-  {
-    id: 'job-3',
-    title: 'Senior Section Track Engineer',
-    agency: 'Metro Railway Transit Corporation',
-    department: 'Engineering and Infrastructure Division',
-    location: 'Kolkata, West Bengal',
-    state: 'West Bengal',
-    salaryRange: '$70,000 - $90,000 / Year',
-    type: 'Full-time',
-    category: 'Railway',
-    deadline: '2026-08-25',
-    description: 'Supervise critical underground tunnel boring works and ensure track alignment calibration standards are upheld.',
-    requirements: ['Bachelor’s in Civil or Mechanical Engineering', '5+ years track safety and structural construction monitoring', 'Familiarity with state heavy transport protocols'],
-  },
-  {
-    id: 'job-4',
-    title: 'Risk Management Officer (Scale III)',
-    agency: 'National Reserve Bank & Treasury',
-    department: 'Financial Stability and Stress Testing Office',
-    location: 'Mumbai, Maharashtra',
-    state: 'Maharashtra',
-    salaryRange: '$95,000 - $120,000 / Year',
-    type: 'Full-time',
-    category: 'Banking',
-    deadline: '2026-09-10',
-    description: 'Perform macro-economic liquidity evaluations, monitor systemic compliance, and author institutional asset vulnerability reports.',
-    requirements: ['Master’s in Finance, Economics, or Quantitative risk assessment', 'Chartered Financial Analyst (CFA) or equivalent credentials', 'Expertise in Basel III compliance frameworks'],
-  },
-  {
-    id: 'job-5',
-    title: 'Aeronautical Telecommunication Officer',
-    agency: 'Defence Research & Development Agency',
-    department: 'Tactical Signal Processing Lab',
-    location: 'Hyderabad, Telangana',
-    state: 'Telangana',
-    salaryRange: '$105,000 - $135,000 / Year',
-    type: 'Full-time',
-    category: 'Defence',
-    deadline: '2026-08-20',
-    description: 'Architect reliable wireless transceiver links and encrypted software-defined radio configurations for defense applications.',
-    requirements: ['Degree in Electronics, Communications, or Aeronautical Tech', 'Active cryptographic routing clearance eligibility', 'Sound knowledge of high-frequency radar algorithms'],
-  },
-  {
-    id: 'job-6',
-    title: 'Cyber Crime Investigator (Specialist)',
-    agency: 'State Intelligence & Cyber Command',
-    department: 'Digital Forensics Division',
-    location: 'Bengaluru, Karnataka',
-    state: 'Karnataka',
-    salaryRange: '$85,000 - $105,000 / Year',
-    type: 'Full-time',
-    category: 'Police',
-    deadline: '2026-10-05',
-    description: 'Analyze file signatures, reverse-engineer phishing payloads, and support complex multi-jurisdictional ransomware tracking cases.',
-    requirements: ['Certified Ethical Hacker (CEH) or CHFI certifications', '3+ years working in malware analysis or active law enforcement forensics', 'Skillful in memory dump parsing tools'],
-  },
-  {
-    id: 'job-7',
-    title: 'Assistant Professor of Renewable Energy Systems',
-    agency: 'National Institute of Technology',
-    department: 'Renewable and Sustainable Engineering Department',
-    location: 'Jaipur, Rajasthan',
-    state: 'Rajasthan',
-    salaryRange: '$80,000 - $100,000 / Year',
-    type: 'Full-time',
-    category: 'Teaching',
-    deadline: '2026-08-30',
-    description: 'Instruct graduate seminars, secure energy research grants, and mentor undergraduate labs focused on solar grid hardware.',
-    requirements: ['PhD in Energy Engineering or related fields', 'Strong research publication track-record in indexed journals', 'Passion for student development and active classroom learning models'],
-  },
-  {
-    id: 'job-8',
-    title: 'Senior Officer (Heavy Mining Operations)',
-    agency: 'National Coal & Minerals PSU',
-    department: 'Extraction Operations Group',
-    location: 'Ranchi, Jharkhand',
-    state: 'Jharkhand',
-    salaryRange: '$90,000 - $115,000 / Year',
-    type: 'Full-time',
-    category: 'PSU',
-    deadline: '2026-09-05',
-    description: 'Manage deep mining operations, lead safety protocols, and optimize resource logistics with modern heavy machinery panels.',
-    requirements: ['Degree in Mining Engineering or geological sciences', 'Mine Manager First-Class competency certification', '7+ years managing state extractive mining operations'],
-  },
-  {
-    id: 'job-9',
-    title: 'District Judicial Magistrate / Law Officer',
-    agency: 'State Supreme Court Registry',
-    department: 'District Civil Judiciary',
-    location: 'Lucknow, Uttar Pradesh',
-    state: 'Uttar Pradesh',
-    salaryRange: '$120,000 - $150,000 / Year',
-    type: 'Full-time',
-    category: 'Judiciary',
-    deadline: '2026-08-18',
-    description: 'Preside over municipal tribunals, evaluate evidentiary filings, and draft authoritative legal rulings in civil disputes.',
-    requirements: ['LLB degree from an accredited law school', 'Active enrollment in the State Bar Association', '7+ years active court practice or judicial magistracy service'],
-  },
-  {
-    id: 'job-10',
-    title: 'Chief Epidemiologist & Disease Analyst',
-    agency: 'National Public Health Authority',
-    department: 'Infectious Disease Surveillance Group',
-    location: 'Remote',
-    state: 'All States',
-    salaryRange: '$115,000 - $140,000 / Year',
-    type: 'Remote',
-    category: 'Healthcare',
-    deadline: '2026-09-22',
-    description: 'Oversee biological contagion spreadsheets, formulate containment guidelines, and brief state healthcare ministers.',
-    requirements: ['MD or PhD in Public Health/Epidemiology', 'High proficiency with statistical modeling frameworks (R/SASS)', 'Proven leadership directing public emergency teams'],
-  },
-  {
-    id: 'job-11',
-    title: 'Lead Structural Quality Engineer',
-    agency: 'National Highways & Infrastructure Corporation',
-    department: 'Bridge & Freeway Design Office',
-    location: 'Guwahati, Assam',
-    state: 'Assam',
-    salaryRange: '$85,000 - $110,000 / Year',
-    type: 'Full-time',
-    category: 'Engineering',
-    deadline: '2026-10-15',
-    description: 'Audit safety factor variables for long-span steel truss bridges and perform structural tension load tests.',
-    requirements: ['Master’s in Structural Engineering', 'Proficiency with SAP2000, AutoCAD, and heavy site stress gear', 'Experience working under high-grade seismic hazard guidelines'],
-  },
-  {
-    id: 'job-12',
-    title: 'Engineering Trade Apprentice (Signals)',
-    agency: 'Central Railway Workshops',
-    department: 'Apprenticeship and Training Unit',
-    location: 'Chennai, Tamil Nadu',
-    state: 'Tamil Nadu',
-    salaryRange: '$30,000 - $40,000 / Year',
-    type: 'Apprenticeship',
-    category: 'Apprenticeship',
-    deadline: '2026-08-12',
-    description: 'Undergo thorough practical rotation in signal cabling, telecom diagnostics, and heavy station transformer maintenance.',
-    requirements: ['Diploma or ITI certification in Electrical / Signal Mechanics', 'Strict compliance with workshop safety regulations', 'Eagerness to transition into full railway signal roles'],
-  },
-];
-
-export const MOCK_TENDERS: TenderListing[] = [
-  {
-    id: 'tender-1',
-    title: 'Smart City High-Speed Fiber Optic Connectivity Phase-3',
-    authority: 'Municipal Corporation & Smart City Initiative',
-    department: 'Urban Development',
-    referenceNumber: 'MCI-TND-2026-044',
-    value: '$1,200,000',
-    deadline: '2026-09-10',
-    publishedDate: '2026-07-10',
-    location: 'Pune, Maharashtra',
-    state: 'Maharashtra',
-    industry: 'Smart Cities',
-    status: 'Open',
-    description: 'Procurement of services, trenching, and laying of over 450km of fiber optic networks to link city public schools, municipal offices, and CCTV centers.',
-  },
-  {
-    id: 'tender-2',
-    title: 'Supply & Distribution of Solar Agricultural Water Pumps',
-    authority: 'State Renewable Energy Development Agency',
-    department: 'Renewable Power Division',
-    referenceNumber: 'SRE-PMP-889',
-    value: '$4,500,000',
-    deadline: '2026-08-30',
-    publishedDate: '2026-07-01',
-    location: 'Jaipur, Rajasthan',
-    state: 'Rajasthan',
-    industry: 'Agriculture',
-    status: 'Open',
-    description: 'Bulk supply, commissioning, and installation of highly efficient DC solar powered water pumps for irrigation under rural green initiative schemes.',
-  },
-  {
-    id: 'tender-3',
-    title: 'Construction of New Super-Specialty Regional Hospital Block',
-    authority: 'Public Works Department (PWD)',
-    department: 'Healthcare Infrastructure Bureau',
-    referenceNumber: 'PWD-HOSP-2026-11',
-    value: '$18,500,000',
-    deadline: '2026-10-15',
-    publishedDate: '2026-07-15',
-    location: 'Guwahati, Assam',
-    state: 'Assam',
-    industry: 'Construction',
-    status: 'Open',
-    description: 'Civil construction, plumbing, fire suppression networks, electrical substation construction, and core structural works for a state-of-the-art five-story critical care wing.',
-  },
-  {
-    id: 'tender-4',
-    title: 'AI-Enabled Public Transit Route Optimization System',
-    authority: 'Urban Transport Authority',
-    department: 'Information Technology Division',
-    referenceNumber: 'UTA-ITS-902',
-    value: '$780,000',
-    deadline: '2026-08-25',
-    publishedDate: '2026-07-18',
-    location: 'Hyderabad, Telangana',
-    state: 'Telangana',
-    industry: 'IT',
-    status: 'Under Evaluation',
-    description: 'Design, development, and system integration of deep-learning algorithms onto urban transit fleet management consoles to optimize dynamically changing route delays.',
-  },
-  {
-    id: 'tender-5',
-    title: 'Solar & Wind Microgrid Decentralized Hybrid Station',
-    authority: 'State Power Transmission Corporation',
-    department: 'Green Energy and Microgrid Group',
-    referenceNumber: 'SPT-GRN-102',
-    value: '$3,800,000',
-    deadline: '2026-09-20',
-    publishedDate: '2026-07-22',
-    location: 'Jaisalmer, Rajasthan',
-    state: 'Rajasthan',
-    industry: 'Energy',
-    status: 'Open',
-    description: 'EPC contracting for setting up a 5MW decentralized hybrid solar/wind power generation plant with localized smart telemetry controls.',
-  },
-  {
-    id: 'tender-6',
-    title: 'Integrated State Digital Health Records Management',
-    authority: 'Department of Health & Family Welfare',
-    department: 'Health Informatics Agency',
-    referenceNumber: 'DHF-EHR-551',
-    value: '$6,200,000',
-    deadline: '2026-09-05',
-    publishedDate: '2026-07-25',
-    location: 'Chennai, Tamil Nadu',
-    state: 'Tamil Nadu',
-    industry: 'Healthcare',
-    status: 'Open',
-    description: 'Custom development of secure cloud-connected patient registry systems, incorporating modern FHIR standards and secure API channels.',
-  },
-  {
-    id: 'tender-7',
-    title: 'Smart Interactive Classroom Displays & LMS Setup',
-    authority: 'Ministry of Education & Human Resources',
-    department: 'Digital Literacy Board',
-    referenceNumber: 'MEH-LMS-2026',
-    value: '$2,400,000',
-    deadline: '2026-08-20',
-    publishedDate: '2026-07-11',
-    location: 'Bhopal, Madhya Pradesh',
-    state: 'Madhya Pradesh',
-    industry: 'Education',
-    status: 'Open',
-    description: 'Supply, installation, and multi-year maintenance support of 4,000 smart interactive touch screens and companion centralized Learning Management software.',
-  },
-  {
-    id: 'tender-8',
-    title: 'Heavy Locomotive Diesel Engine Component Castings',
-    authority: 'National Locomotive & Wheel Factory',
-    department: 'Heavy Casting Workshop Bureau',
-    referenceNumber: 'NLW-ENG-904',
-    value: '$1,950,000',
-    deadline: '2026-10-01',
-    publishedDate: '2026-07-16',
-    location: 'Patiala, Punjab',
-    state: 'Punjab',
-    industry: 'Railways',
-    status: 'Open',
-    description: 'Bulk casting and machine turning of precision steel crankcases and piston cylinder block liners adhering to RDSO train engineering specifications.',
-  },
-  {
-    id: 'tender-9',
-    title: 'Active Coastal Patrol Surveillance Radar Integration',
-    authority: 'Navy Strategic Procurement Desk',
-    department: 'Defense Electronics Division',
-    referenceNumber: 'NAV-RAD-449',
-    value: '$14,000,000',
-    deadline: '2026-11-10',
-    publishedDate: '2026-07-30',
-    location: 'Visakhapatnam, Andhra Pradesh',
-    state: 'Andhra Pradesh',
-    industry: 'Defence',
-    status: 'Open',
-    description: 'Supply, deployment, and integration of S-band solid-state active coastal surveillance radar hubs with encrypted satellite datalinks.',
-  },
-  {
-    id: 'tender-10',
-    title: 'Statewide WAN Backbone Optical Transmission Upgrades',
-    authority: 'State Telecommunication Infrastructure Corporation',
-    department: 'Broadband Network Division',
-    referenceNumber: 'STC-WAN-880',
-    value: '$8,500,000',
-    deadline: '2026-09-30',
-    publishedDate: '2026-07-28',
-    location: 'Lucknow, Uttar Pradesh',
-    state: 'Uttar Pradesh',
-    industry: 'Telecom',
-    status: 'Open',
-    description: 'Installation of high-capacity DWDM optical transport routers to scale state-wide network backbone speeds to 100Gbps interfaces.',
-  },
-];
-
-export const MOCK_FUNDING: FundingScheme[] = [
-  {
-    id: 'fund-1',
-    title: 'National Deep-Tech Startups Grant Scheme',
-    ministry: 'Ministry of Electronics & Information Technology',
-    department: 'Startup India & Innovation Desk',
-    amount: 'Up to $150,000',
-    eligibility: 'Early-stage deep-tech, AI/ML, and semiconductor startups registered within the past 3 years.',
-    state: 'National',
-    sector: 'Startup',
-    description: 'Fostering homegrown cutting-edge technological advancements through direct capital grants without equity dilution to commercialize next-gen hardware/software.',
-    benefits: ['100% non-dilutive startup funding', 'Mentorship and acceleration programs with premier research institutes', 'Direct access to government procurement sandbox environments'],
-  },
-  {
-    id: 'fund-2',
-    title: 'Sustain-Agri: Eco-Friendly Farming Grants',
-    ministry: 'Department of Agriculture & Farmers Welfare',
-    department: 'Organic farming promotion desk',
-    amount: 'Up to $40,000',
-    eligibility: 'Individual agriculturalists, local cooperatives, and organic farming self-help groups.',
-    state: 'National',
-    sector: 'Agriculture',
-    description: 'Assisting smallholders in transition to organic practices, micro-irrigation systems, and soil regenerative agriculture methods.',
-    benefits: ['Subsidies on organic input and soil testing equipment', 'Interest-free loans on buying water-efficient machinery', 'Free multi-day training at state agricultural hubs'],
-  },
-  {
-    id: 'fund-3',
-    title: 'Green Innovation & Carbon Reduction Support',
-    ministry: 'Ministry of New and Renewable Energy',
-    department: 'Carbon Mitigation Group',
-    amount: 'Up to $250,000',
-    eligibility: 'SMEs, academic spin-offs, and research labs working on waste-to-energy, green hydrogen, or circular economy ideas.',
-    state: 'National',
-    sector: 'Innovation',
-    description: 'Funding research, research labs, rapid prototyping, and pilot trials for technological breakthroughs in greenhouse gas reduction and plastic alternatives.',
-    benefits: ['Phased commercialization milestone grants', 'Assistance in local and international patent filing', 'Validation testing facilities in partnership with state laboratories'],
-  },
-  {
-    id: 'fund-4',
-    title: 'MSME Credit Guarantee Scheme (CGTMSE)',
-    ministry: 'Ministry of Micro, Small & Medium Enterprises',
-    department: 'SME Support and Credit Bureau',
-    amount: 'Up to $300,000',
-    eligibility: 'New and existing Micro and Small Enterprises engaged in manufacturing or service activities.',
-    state: 'National',
-    sector: 'MSME',
-    description: 'Collateral-free credit support to actively encourage young entrepreneurs in developing self-sustainable engineering workshops and assembly centers.',
-    benefits: ['100% collateral-free commercial loans', 'Subsidized loan interest rates for rural and women-owned units', 'Extended repayment holidays up to 18 months'],
-  },
-  {
-    id: 'fund-5',
-    title: 'Mahila Udyam: State Women Entrepreneurship Capital',
-    ministry: 'Department of Women & Child Development',
-    department: 'Women Empowerment and Incubation Group',
-    amount: 'Up to $80,000',
-    eligibility: 'Enterprises where more than 51% share capital is owned and controlled by women.',
-    state: 'Maharashtra',
-    sector: 'Women',
-    description: 'Targeted incubator support, direct asset subsidies, and low-interest capital loans designed to assist women-led manufacturing and handicrafts workshops.',
-    benefits: ['Interest subsidy of up to 4% per annum', 'Zero application processing fee checks', 'Exclusive participation slots in international trade fairs'],
-  },
-  {
-    id: 'fund-6',
-    title: 'National Post-Graduate Research Fellowship',
-    ministry: 'Ministry of Science & Technology',
-    department: 'Council of Scientific & Industrial Research',
-    amount: 'Up to $25,000 / Year',
-    eligibility: 'Students under 30 years pursuing PhD or post-graduate thesis studies in science and tech.',
-    state: 'National',
-    sector: 'Students',
-    description: 'Direct stipend payouts to support advanced scientific experimentation, textbook access, and doctoral mentorship under leading laboratories.',
-    benefits: ['Monthly stipendiary allowances paid directly to student accounts', 'Contingency grants for purchase of textbooks and lab consumables', 'Sponsored international conference travel allowances'],
-  },
-  {
-    id: 'fund-7',
-    title: 'Advanced Materials Research Initiative Grant',
-    ministry: 'Ministry of Science & Technology',
-    department: 'Strategic Materials Laboratory Division',
-    amount: 'Up to $500,000',
-    eligibility: 'Joint ventures between university research departments and registered industrial enterprises.',
-    state: 'National',
-    sector: 'Research',
-    description: 'Facilitating experimental prototyping of superconducting materials, smart alloys, and nanoscale carbon composite panels.',
-    benefits: ['Milestone-based multi-year direct funding allocations', 'Procurement import custom duty waivers', 'Priority validation channels in state testing laboratories'],
-  },
-  {
-    id: 'fund-8',
-    title: 'Export Promotion Capital Goods Scheme (EPCG)',
-    ministry: 'Ministry of Commerce & Industry',
-    department: 'Directorate General of Foreign Trade',
-    amount: 'Customs Duty Subsidies',
-    eligibility: 'Manufacturer exporters, service providers, and merchant exporters with active export portfolios.',
-    state: 'National',
-    sector: 'Export',
-    description: 'Exempts import customs duties on capital goods machinery to incentivize structural quality scaling for local manufacturing.',
-    benefits: ['Zero-duty import of high-tech production machinery', 'Tax-free import options on testing equipment and spares', 'Simplified foreign transaction validation pipelines'],
-  },
-  {
-    id: 'fund-9',
-    title: 'Production Linked Incentive (PLI) for Electronics',
-    ministry: 'Ministry of Electronics & Information Technology',
-    department: 'Heavy Manufacturing Promotion Bureau',
-    amount: 'Up to $10,000,000',
-    eligibility: 'Large scale electronic components manufacturers meeting baseline incremental sales targets.',
-    state: 'Karnataka',
-    sector: 'Manufacturing',
-    description: 'Direct financial incentives of 4% to 6% on incremental sales to scale local assembly lines for high-end microelectronics and semiconductors.',
-    benefits: ['Direct cash incentive payouts based on production milestones', 'Fast-track environmental and safety approval processing', 'State infrastructure lease priority support'],
-  },
-];
-
-export const STATES_LIST = [
-  'All States',
-  'Delhi',
-  'Uttarakhand',
-  'West Bengal',
-  'Maharashtra',
-  'Telangana',
-  'Karnataka',
-  'Rajasthan',
-  'Jharkhand',
-  'Uttar Pradesh',
-  'Assam',
-  'Tamil Nadu',
-  'Punjab',
-  'Andhra Pradesh',
-  'Madhya Pradesh'
-];
-
 // Reusable Local Pagination Component
+// -----------------------------------------------------------------------------
 interface PaginationProps {
   currentPage: number;
   totalItems: number;
@@ -606,6 +127,11 @@ export function WebApp() {
   const [currentView, setCurrentView] = useState<PageView>('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Scalable list states populated asynchronously via service hook simulations
+  const [jobs, setJobs] = useState<JobListing[]>(INITIAL_JOBS);
+  const [tenders, setTenders] = useState<TenderListing[]>(INITIAL_TENDERS);
+  const [fundingSchemes, setFundingSchemes] = useState<FundingScheme[]>(INITIAL_FUNDING);
+
   // Government Jobs page specific states
   const [selectedJobCategory, setSelectedJobCategory] = useState<string>('All');
   const [selectedJobState, setSelectedJobState] = useState<string>('All States');
@@ -630,6 +156,7 @@ export function WebApp() {
   });
   const [contactSuccess, setContactSuccess] = useState<boolean>(false);
   const [contactError, setContactError] = useState<string>('');
+  const [generatedTicketId, setGeneratedTicketId] = useState<string>('');
 
   // Active inspectors for detail modals (Pure frontend state representation)
   const [activeJobDetail, setActiveJobDetail] = useState<JobListing | null>(null);
@@ -651,44 +178,42 @@ export function WebApp() {
 
   const ITEMS_PER_PAGE = 6;
 
-  // Filter listings dynamically based on dropdown values
-  const filteredJobs = useMemo(() => {
-    return MOCK_JOBS.filter((j) => {
-      const matchesSearch =
-        j.title.toLowerCase().includes(jobSearch.toLowerCase()) ||
-        j.agency.toLowerCase().includes(jobSearch.toLowerCase()) ||
-        j.location.toLowerCase().includes(jobSearch.toLowerCase()) ||
-        j.description.toLowerCase().includes(jobSearch.toLowerCase());
-      const matchesCategory = selectedJobCategory === 'All' || j.category === selectedJobCategory;
-      const matchesState = selectedJobState === 'All States' || j.state === selectedJobState || j.state === 'All States';
-      return matchesSearch && matchesCategory && matchesState;
+  // Simulate real-world asynchronous API fetch on mount to verify services data layer
+  useEffect(() => {
+    let isMounted = true;
+
+    // Fetch mock jobs async
+    jobsService.fetchJobs().then((data) => {
+      if (isMounted) setJobs(data);
     });
-  }, [jobSearch, selectedJobCategory, selectedJobState]);
+
+    // Fetch mock tenders async
+    tendersService.fetchTenders().then((data) => {
+      if (isMounted) setTenders(data);
+    });
+
+    // Fetch mock funding async
+    fundingService.fetchFunding().then((data) => {
+      if (isMounted) setFundingSchemes(data);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Filter listings dynamically using modular searchUtils
+  const filteredJobs = useMemo(() => {
+    return filterJobs(jobs, jobSearch, selectedJobCategory, selectedJobState);
+  }, [jobs, jobSearch, selectedJobCategory, selectedJobState]);
 
   const filteredTenders = useMemo(() => {
-    return MOCK_TENDERS.filter((t) => {
-      const matchesSearch =
-        t.title.toLowerCase().includes(tenderSearch.toLowerCase()) ||
-        t.authority.toLowerCase().includes(tenderSearch.toLowerCase()) ||
-        t.location.toLowerCase().includes(tenderSearch.toLowerCase()) ||
-        t.referenceNumber.toLowerCase().includes(tenderSearch.toLowerCase());
-      const matchesIndustry = selectedTenderIndustry === 'All' || t.industry === selectedTenderIndustry;
-      const matchesState = selectedTenderState === 'All States' || t.state === selectedTenderState;
-      return matchesSearch && matchesIndustry && matchesState;
-    });
-  }, [tenderSearch, selectedTenderIndustry, selectedTenderState]);
+    return filterTenders(tenders, tenderSearch, selectedTenderIndustry, selectedTenderState);
+  }, [tenders, tenderSearch, selectedTenderIndustry, selectedTenderState]);
 
   const filteredFunding = useMemo(() => {
-    return MOCK_FUNDING.filter((f) => {
-      const matchesSearch =
-        f.title.toLowerCase().includes(fundingSearch.toLowerCase()) ||
-        f.ministry.toLowerCase().includes(fundingSearch.toLowerCase()) ||
-        f.description.toLowerCase().includes(fundingSearch.toLowerCase());
-      const matchesSector = selectedFundingSector === 'All' || f.sector === selectedFundingSector;
-      const matchesState = selectedFundingState === 'All States' || f.state === selectedFundingState || f.state === 'National';
-      return matchesSearch && matchesSector && matchesState;
-    });
-  }, [fundingSearch, selectedFundingSector, selectedFundingState]);
+    return filterFunding(fundingSchemes, fundingSearch, selectedFundingSector, selectedFundingState);
+  }, [fundingSchemes, fundingSearch, selectedFundingSector, selectedFundingState]);
 
   // Paginated items
   const paginatedJobs = useMemo(() => {
@@ -711,48 +236,29 @@ export function WebApp() {
   const tenderIndustries = ['All', 'Construction', 'IT', 'Energy', 'Healthcare', 'Education', 'Railways', 'Defence', 'Telecom', 'Smart Cities', 'Agriculture'];
   const fundingSectors = ['All', 'Startup', 'MSME', 'Agriculture', 'Women', 'Students', 'Research', 'Export', 'Manufacturing', 'Innovation'];
 
-  // Global search input handling for the Home Page
+  // Global search input handling using modular determineGlobalSearchTarget utility
   const handleHomeSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!globalHomeSearch.trim()) return;
 
-    const query = globalHomeSearch.toLowerCase();
+    const targetView = determineGlobalSearchTarget(globalHomeSearch, jobs, tenders, fundingSchemes);
 
-    // Check if matching in Jobs
-    const matchedJobsCount = MOCK_JOBS.filter(
-      (j) => j.title.toLowerCase().includes(query) || j.description.toLowerCase().includes(query)
-    ).length;
-
-    // Check if matching in Tenders
-    const matchedTendersCount = MOCK_TENDERS.filter(
-      (t) => t.title.toLowerCase().includes(query) || t.description.toLowerCase().includes(query)
-    ).length;
-
-    // Check if matching in Funding
-    const matchedFundingCount = MOCK_FUNDING.filter(
-      (f) => f.title.toLowerCase().includes(query) || f.description.toLowerCase().includes(query)
-    ).length;
-
-    if (matchedJobsCount >= matchedTendersCount && matchedJobsCount >= matchedFundingCount && matchedJobsCount > 0) {
+    if (targetView === 'jobs') {
       setJobSearch(globalHomeSearch);
       setJobsPage(1);
       setCurrentView('jobs');
-    } else if (matchedTendersCount >= matchedFundingCount && matchedTendersCount > 0) {
+    } else if (targetView === 'tenders') {
       setTenderSearch(globalHomeSearch);
       setTendersPage(1);
       setCurrentView('tenders');
-    } else if (matchedFundingCount > 0) {
+    } else if (targetView === 'funding') {
       setFundingSearch(globalHomeSearch);
       setFundingPage(1);
       setCurrentView('funding');
-    } else {
-      setJobSearch(globalHomeSearch);
-      setJobsPage(1);
-      setCurrentView('jobs');
     }
   };
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contactForm.name || !contactForm.email || !contactForm.message) {
       setContactError('Please fill out all required fields.');
@@ -760,20 +266,51 @@ export function WebApp() {
       return;
     }
     setContactError('');
-    setContactSuccess(true);
-    setContactForm({ name: '', email: '', subject: '', message: '' });
+
+    // Connect to contact simulated service
+    try {
+      const response = await contactService.submitInquiry(contactForm);
+      if (response.success) {
+        setGeneratedTicketId(response.referenceId);
+        setContactSuccess(true);
+        setContactForm({ name: '', email: '', subject: '', message: '' });
+      }
+    } catch {
+      setContactError('An unexpected error occurred transmitting the inquiry. Please try again.');
+    }
   };
 
-  const handleApplyAction = (listingId: string) => {
-    setHasApplied((prev) => ({ ...prev, [listingId]: true }));
+  const handleApplyAction = async (listingId: string) => {
+    try {
+      const res = await jobsService.applyForJob(listingId);
+      if (res.success) {
+        setHasApplied((prev) => ({ ...prev, [listingId]: true }));
+      }
+    } catch {
+      // Gracefully handle promise rejection in testing
+    }
   };
 
-  const handleTenderBidSubmit = (tenderId: string) => {
-    setSubmittedBids((prev) => ({ ...prev, [tenderId]: true }));
+  const handleTenderBidSubmit = async (tenderId: string) => {
+    try {
+      const res = await tendersService.placeBid(tenderId);
+      if (res.success) {
+        setSubmittedBids((prev) => ({ ...prev, [tenderId]: true }));
+      }
+    } catch {
+      // Gracefully handle promise rejection in testing
+    }
   };
 
-  const handleGrantApplySubmit = (fundId: string) => {
-    setAppliedGrants((prev) => ({ ...prev, [fundId]: true }));
+  const handleGrantApplySubmit = async (fundId: string) => {
+    try {
+      const res = await fundingService.applyScheme(fundId);
+      if (res.success) {
+        setAppliedGrants((prev) => ({ ...prev, [fundId]: true }));
+      }
+    } catch {
+      // Gracefully handle promise rejection in testing
+    }
   };
 
   return (
@@ -989,7 +526,7 @@ export function WebApp() {
                     </div>
                   </div>
                   <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
-                    <span className="text-xs font-semibold text-slate-400">{MOCK_JOBS.length} Live Openings</span>
+                    <span className="text-xs font-semibold text-slate-400">{jobs.length} Live Openings</span>
                     <button
                       onClick={() => { setCurrentView('jobs'); setJobSearch(''); setSelectedJobCategory('All'); setSelectedJobState('All States'); setJobsPage(1); }}
                       className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center space-x-1"
@@ -1014,7 +551,7 @@ export function WebApp() {
                     </div>
                   </div>
                   <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
-                    <span className="text-xs font-semibold text-slate-400">{MOCK_TENDERS.length} Opportunities</span>
+                    <span className="text-xs font-semibold text-slate-400">{tenders.length} Opportunities</span>
                     <button
                       onClick={() => { setCurrentView('tenders'); setTenderSearch(''); setSelectedTenderIndustry('All'); setSelectedTenderState('All States'); setTendersPage(1); }}
                       className="text-sm font-bold text-amber-600 hover:text-amber-800 flex items-center space-x-1"
@@ -1039,7 +576,7 @@ export function WebApp() {
                     </div>
                   </div>
                   <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
-                    <span className="text-xs font-semibold text-slate-400">{MOCK_FUNDING.length} Active Schemes</span>
+                    <span className="text-xs font-semibold text-slate-400">{fundingSchemes.length} Active Schemes</span>
                     <button
                       onClick={() => { setCurrentView('funding'); setFundingSearch(''); setSelectedFundingSector('All'); setSelectedFundingState('All States'); setFundingPage(1); }}
                       className="text-sm font-bold text-emerald-600 hover:text-emerald-800 flex items-center space-x-1"
@@ -1773,7 +1310,7 @@ export function WebApp() {
                       <span className="text-4xl block">✉️</span>
                       <h4 className="font-extrabold text-emerald-800 text-sm">Message Transmitted Successfully!</h4>
                       <p className="text-xs text-emerald-600 max-w-sm mx-auto leading-relaxed">
-                        Thank you for contacting the citizen helpdesk. A ticket reference has been logged. We will reach out to you shortly.
+                        Thank you for contacting the citizen helpdesk. Ticket Reference ID: <strong className="font-mono text-slate-900">{generatedTicketId}</strong> has been logged. We will reach out to you shortly.
                       </p>
                       <Button
                         onClick={() => setContactSuccess(false)}
