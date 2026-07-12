@@ -1,5 +1,7 @@
 export type PageView = 'home' | 'jobs' | 'tenders' | 'funding' | 'contact';
 
+export type UserPlan = 'free' | 'premium';
+
 export interface JobListing {
   id: string;
   title: string;

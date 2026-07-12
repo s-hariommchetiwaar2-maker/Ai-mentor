@@ -4,6 +4,7 @@ import { Button, Card } from '@ai-mentor/shared-ui';
 // Import Types
 import {
   PageView,
+  UserPlan,
   JobListing,
   TenderListing,
   FundingScheme,
@@ -131,6 +132,33 @@ export const Pagination: React.FC<PaginationProps> = ({
 export function WebApp() {
   const [currentView, setCurrentView] = useState<PageView>('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Subscription and notification states
+  const [userPlan, setUserPlan] = useState<UserPlan>('free');
+  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const [notifications, setNotifications] = useState([
+    {
+      id: 'notif-1',
+      title: 'New Job: Senior Cloud Solutions Architect',
+      department: 'Software Architecture Wing',
+      date: '2026-07-01',
+      category: 'Job',
+    },
+    {
+      id: 'notif-2',
+      title: 'New Tender: Urban Multi-Modal Transit Terminal',
+      department: 'Urban Transport Division',
+      date: '2026-08-01',
+      category: 'Tender',
+    },
+    {
+      id: 'notif-3',
+      title: 'New Funding: National Deep-Tech Startups Grant',
+      department: 'Startup India & Innovation Desk',
+      date: '2026-07-01',
+      category: 'Funding',
+    },
+  ]);
 
   // Scalable list states populated asynchronously via service hook simulations
   const [jobs, setJobs] = useState<JobListing[]>(INITIAL_JOBS);
@@ -471,6 +499,98 @@ export function WebApp() {
               </button>
             </nav>
 
+            {/* Desktop Actions (Plan Switcher + Notification Bell) */}
+            <div className="hidden md:flex items-center space-x-4 relative">
+              {/* Notification Bell */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+                  className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-full transition-all relative focus:outline-none"
+                  title="Opportunity Alerts"
+                >
+                  <span className="text-xl">🔔</span>
+                  <span className="absolute top-1 right-1 bg-red-600 text-white font-extrabold text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center animate-pulse">
+                    {notifications.length}
+                  </span>
+                </button>
+
+                {/* Notifications Dropdown menu */}
+                {showNotificationsDropdown && (
+                  <div className="absolute right-0 mt-3 w-80 bg-white text-slate-900 rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50 animate-fadeIn">
+                    <div className="bg-slate-950 text-white p-3.5 border-b border-slate-800 flex justify-between items-center">
+                      <span className="text-xs font-black tracking-wider uppercase">🔔 Real-Time Alerts</span>
+                      <span className="text-[10px] bg-blue-600 px-2 py-0.5 rounded font-extrabold uppercase">Free Plan</span>
+                    </div>
+                    <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+                      {notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className="p-3 hover:bg-slate-50 cursor-pointer transition-colors space-y-1"
+                          onClick={() => {
+                            setShowNotificationsDropdown(false);
+                            if (notif.category === 'Job') {
+                              setCurrentView('jobs');
+                              setActiveJobDetail(null);
+                            } else if (notif.category === 'Tender') {
+                              setCurrentView('tenders');
+                              setActiveTenderDetail(null);
+                            } else if (notif.category === 'Funding') {
+                              setCurrentView('funding');
+                              setActiveFundingDetail(null);
+                            }
+                          }}
+                        >
+                          <div className="flex justify-between items-center">
+                            <span className={`text-[9px] font-black uppercase px-2 py-0.2 rounded-full ${
+                              notif.category === 'Job'
+                                ? 'bg-blue-100 text-blue-800'
+                                : notif.category === 'Tender'
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-emerald-100 text-emerald-800'
+                            }`}>
+                              {notif.category}
+                            </span>
+                            <span className="text-[9px] text-slate-400 font-medium">{notif.date}</span>
+                          </div>
+                          <h4 className="text-xs font-bold text-slate-800 line-clamp-1">{notif.title}</h4>
+                          <p className="text-[10px] text-slate-500 truncate">{notif.department}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-slate-50 p-2.5 text-center text-[10px] text-slate-400 font-semibold border-t border-slate-100">
+                      Showing alerts for new Opportunities
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Plan Toggle Button */}
+              <div className="flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
+                <span className="text-[10px] uppercase font-black text-slate-400">Plan:</span>
+                {userPlan === 'free' ? (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-bold text-slate-200">🎫 Free (1M)</span>
+                    <button
+                      onClick={() => setUserPlan('premium')}
+                      className="bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-extrabold px-2.5 py-1 rounded transition-colors"
+                    >
+                      Upgrade
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-bold text-amber-400">👑 Premium</span>
+                    <button
+                      onClick={() => setUserPlan('free')}
+                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] font-bold px-2 py-1 rounded transition-colors"
+                    >
+                      Downgrade
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Mobile menu toggle */}
             <div className="md:hidden">
               <button
@@ -527,6 +647,58 @@ export function WebApp() {
             >
               Contact
             </button>
+
+            {/* Mobile Plan & Notification Actions */}
+            <div className="border-t border-slate-800 pt-3 mt-3 space-y-3">
+              <div className="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                <span className="text-xs font-bold text-slate-400">Active Subscription:</span>
+                {userPlan === 'free' ? (
+                  <button
+                    onClick={() => { setUserPlan('premium'); setIsMobileMenuOpen(false); }}
+                    className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg"
+                  >
+                    🎫 Upgrade Free (1M)
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { setUserPlan('free'); setIsMobileMenuOpen(false); }}
+                    className="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg"
+                  >
+                    👑 Downgrade Premium
+                  </button>
+                )}
+              </div>
+
+              {/* Mobile Notification Alert items */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block px-1">Recent Alerts</span>
+                {notifications.map((notif) => (
+                  <div
+                    key={notif.id}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      if (notif.category === 'Job') {
+                        setCurrentView('jobs');
+                        setActiveJobDetail(null);
+                      } else if (notif.category === 'Tender') {
+                        setCurrentView('tenders');
+                        setActiveTenderDetail(null);
+                      } else if (notif.category === 'Funding') {
+                        setCurrentView('funding');
+                        setActiveFundingDetail(null);
+                      }
+                    }}
+                    className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs"
+                  >
+                    <div>
+                      <span className="text-[9px] font-black text-blue-400 block uppercase">{notif.category}</span>
+                      <span className="font-bold text-slate-200 line-clamp-1">{notif.title}</span>
+                    </div>
+                    <span className="text-[9px] text-slate-500 whitespace-nowrap ml-2">{notif.date}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </header>
@@ -774,7 +946,13 @@ export function WebApp() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {paginatedJobs.map((job) => (
-                    <Card key={job.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80">
+                    <Card key={job.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80 relative overflow-hidden bg-white">
+                      {userPlan === 'free' && (
+                        <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm">
+                          <span>🔒</span>
+                          <span>Locked</span>
+                        </div>
+                      )}
                       <div className="space-y-4">
                         <div className="flex justify-between items-start gap-2">
                           <div className="flex flex-wrap gap-1.5">
@@ -785,28 +963,56 @@ export function WebApp() {
                               {job.type}
                             </span>
                           </div>
-                          <span className="text-xs text-slate-400 font-medium whitespace-nowrap">Deadline: {job.deadline}</span>
+                          <span className="text-xs text-slate-400 font-medium whitespace-nowrap">Date: {job.deadline}</span>
                         </div>
                         <div>
                           <h3 className="text-lg font-bold text-slate-900 line-clamp-1">{job.title}</h3>
                           <p className="text-sm font-semibold text-slate-600 mt-0.5">{job.agency}</p>
                           <p className="text-xs font-medium text-slate-400 mt-1">{job.department} ({job.ministry})</p>
                         </div>
-                        <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{job.description}</p>
+                        {userPlan === 'free' ? (
+                          <div className="p-3 bg-slate-50 border border-slate-150 rounded-xl flex items-center space-x-2 text-xs text-slate-500">
+                            <span>🔒</span>
+                            <span>Detailed description locked on Free Plan.</span>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{job.description}</p>
+                        )}
                       </div>
 
                       <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
                         <div>
                           <span className="text-[10px] text-slate-400 block font-medium uppercase tracking-wider">Salary Indication</span>
-                          <span className="text-sm font-bold text-slate-950">{job.salaryRange}</span>
+                          {userPlan === 'free' ? (
+                            <span className="text-xs font-bold text-slate-400">🔒 Locked</span>
+                          ) : (
+                            <span className="text-sm font-bold text-slate-950">{job.salaryRange}</span>
+                          )}
                         </div>
                         <div className="flex space-x-2">
-                          <Button
-                            onClick={() => { setActiveJobDetail(job); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                            className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
-                          >
-                            Explore Details
-                          </Button>
+                          {userPlan === 'free' ? (
+                            <>
+                              <button
+                                onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                                className="px-3 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all"
+                              >
+                                Unlock with Premium
+                              </button>
+                              <Button
+                                onClick={() => { setActiveJobDetail(job); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
+                              >
+                                View (Locked)
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              onClick={() => { setActiveJobDetail(job); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                              className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
+                            >
+                              Explore Details
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </Card>
@@ -905,86 +1111,109 @@ export function WebApp() {
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Complete Description</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{activeJobDetail.description}</p>
-              </div>
-
-              {/* Eligibility */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Eligibility Checklist</h3>
-                <p className="text-slate-600 text-sm leading-relaxed bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">{activeJobDetail.eligibility}</p>
-              </div>
-
-              {/* Requirements list */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Mandatory Qualifications</h3>
-                <ul className="list-disc list-inside space-y-1.5 text-slate-600 text-sm">
-                  {activeJobDetail.requirements.map((req, index) => (
-                    <li key={index}>{req}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Required Documents */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Required Documents Checklist</h3>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-                  <p className="text-xs text-slate-500 mb-1">Please ensure you have scanned copies of the following documents ready before submitting your application:</p>
-                  <ul className="space-y-1.5 text-slate-700 text-xs font-medium">
-                    {activeJobDetail.requiredDocuments && activeJobDetail.requiredDocuments.map((doc, idx) => (
-                      <li key={idx} className="flex items-center space-x-2">
-                        <span className="text-emerald-500 font-bold">✓</span>
-                        <span>{doc}</span>
-                      </li>
-                    ))}
-                  </ul>
+              {userPlan === 'free' ? (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-8 text-center space-y-4 shadow-sm animate-fadeIn">
+                  <span className="text-5xl block">🔒</span>
+                  <h3 className="text-lg font-black text-slate-900">Detailed Information Locked</h3>
+                  <p className="text-slate-600 text-xs max-w-md mx-auto leading-relaxed">
+                    Full access to detailed qualifications, required documents checklists, evaluation selection procedures, official portal links, and instant application forms is restricted to Premium subscribers.
+                  </p>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                      className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl shadow-md text-xs transition-all"
+                    >
+                      👑 Unlock with Premium
+                    </button>
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                    Free Plan Validity: 1 Month
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Complete Description</h3>
+                    <p className="text-slate-600 text-sm leading-relaxed">{activeJobDetail.description}</p>
+                  </div>
 
-              {/* Selection Process */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Selection & Evaluation Process</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{activeJobDetail.selectionProcess}</p>
-              </div>
+                  {/* Eligibility */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Eligibility Checklist</h3>
+                    <p className="text-slate-600 text-sm leading-relaxed bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">{activeJobDetail.eligibility}</p>
+                  </div>
 
-              {/* Important Instructions */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Important Instructions</h3>
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-1">
-                  <span className="font-bold block">⚠️ Crucial Warning Notes:</span>
-                  <p>{activeJobDetail.importantInstructions}</p>
-                </div>
-              </div>
+                  {/* Requirements list */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Mandatory Qualifications</h3>
+                    <ul className="list-disc list-inside space-y-1.5 text-slate-600 text-sm">
+                      {activeJobDetail.requirements.map((req, index) => (
+                        <li key={index}>{req}</li>
+                      ))}
+                    </ul>
+                  </div>
 
-              {/* Actions & Dates */}
-              <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex flex-col text-xs text-slate-400 space-y-0.5">
-                  <span>Published Date: <strong>{activeJobDetail.publishedDate}</strong></span>
-                  <span>Official Gazette/Source: <strong className="text-slate-600">{activeJobDetail.officialSource}</strong></span>
-                </div>
-                <div className="flex space-x-3 w-full sm:w-auto">
-                  <a
-                    href={activeJobDetail.officialWebsite}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-5 py-2.5 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-lg text-center flex-grow sm:flex-grow-0"
-                  >
-                    Official Website
-                  </a>
-                  <Button
-                    onClick={() => handleApplyAction(activeJobDetail.id)}
-                    className={`px-6 py-2.5 text-xs font-bold rounded-lg flex-grow sm:flex-grow-0 ${
-                      hasApplied[activeJobDetail.id]
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/10'
-                    }`}
-                  >
-                    {hasApplied[activeJobDetail.id] ? '✓ Applied' : 'Apply Opportunity'}
-                  </Button>
-                </div>
-              </div>
+                  {/* Required Documents */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Required Documents Checklist</h3>
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                      <p className="text-xs text-slate-500 mb-1">Please ensure you have scanned copies of the following documents ready before submitting your application:</p>
+                      <ul className="space-y-1.5 text-slate-700 text-xs font-medium">
+                        {activeJobDetail.requiredDocuments && activeJobDetail.requiredDocuments.map((doc, idx) => (
+                          <li key={idx} className="flex items-center space-x-2">
+                            <span className="text-emerald-500 font-bold">✓</span>
+                            <span>{doc}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Selection Process */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Selection & Evaluation Process</h3>
+                    <p className="text-slate-600 text-sm leading-relaxed">{activeJobDetail.selectionProcess}</p>
+                  </div>
+
+                  {/* Important Instructions */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Important Instructions</h3>
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-1">
+                      <span className="font-bold block">⚠️ Crucial Warning Notes:</span>
+                      <p>{activeJobDetail.importantInstructions}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions & Dates */}
+                  <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex flex-col text-xs text-slate-400 space-y-0.5">
+                      <span>Published Date: <strong>{activeJobDetail.publishedDate}</strong></span>
+                      <span>Official Gazette/Source: <strong className="text-slate-600">{activeJobDetail.officialSource}</strong></span>
+                    </div>
+                    <div className="flex space-x-3 w-full sm:w-auto">
+                      <a
+                        href={activeJobDetail.officialWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-5 py-2.5 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-lg text-center flex-grow sm:flex-grow-0"
+                      >
+                        Official Website
+                      </a>
+                      <Button
+                        onClick={() => handleApplyAction(activeJobDetail.id)}
+                        className={`px-6 py-2.5 text-xs font-bold rounded-lg flex-grow sm:flex-grow-0 ${
+                          hasApplied[activeJobDetail.id]
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/10'
+                        }`}
+                      >
+                        {hasApplied[activeJobDetail.id] ? '✓ Applied' : 'Apply Opportunity'}
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Related opportunities */}
@@ -1260,7 +1489,13 @@ export function WebApp() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
                           {paginatedTenders.map((tender) => {
                             return (
-                              <Card key={tender.id} className="hover:shadow-md transition-all flex flex-col justify-between border-slate-200/80 bg-white p-5">
+                              <Card key={tender.id} className="hover:shadow-md transition-all flex flex-col justify-between border-slate-200/80 bg-white p-5 relative overflow-hidden">
+                                {userPlan === 'free' && (
+                                  <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm">
+                                    <span>🔒</span>
+                                    <span>Locked</span>
+                                  </div>
+                                )}
                                 <div className="space-y-4">
                                   <div className="flex justify-between items-start gap-2">
                                     <span className="bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
@@ -1273,26 +1508,54 @@ export function WebApp() {
                                     <h3 className="text-base font-extrabold text-slate-900 line-clamp-1">{tender.title}</h3>
                                     <p className="text-xs font-bold text-slate-600 mt-1">{tender.authority}</p>
                                     <p className="text-[10px] font-medium text-slate-400 mt-1 flex items-center">
-                                      <span className="mr-1">📍</span> {tender.location} ({tender.state})
+                                      <span className="mr-1">Date:</span> {tender.publishedDate}
                                     </p>
                                   </div>
 
-                                  <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{tender.description}</p>
+                                  {userPlan === 'free' ? (
+                                    <div className="p-3 bg-slate-50 border border-slate-150 rounded-xl flex items-center space-x-2 text-xs text-slate-500">
+                                      <span>🔒</span>
+                                      <span>Procurement details locked on Free Plan.</span>
+                                    </div>
+                                  ) : (
+                                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{tender.description}</p>
+                                  )}
                                 </div>
 
                                 <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
                                   <div>
                                     <span className="text-[9px] text-slate-400 block font-semibold uppercase tracking-wider">Estimated Budget</span>
-                                    <span className="text-sm font-black text-slate-950">{tender.value}</span>
+                                    {userPlan === 'free' ? (
+                                      <span className="text-xs font-bold text-slate-400">🔒 Locked</span>
+                                    ) : (
+                                      <span className="text-sm font-black text-slate-950">{tender.value}</span>
+                                    )}
                                   </div>
 
                                   <div className="flex space-x-2">
-                                    <Button
-                                      onClick={() => { setActiveTenderDetail(tender); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                                      className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg shadow-sm"
-                                    >
-                                      Explore Details
-                                    </Button>
+                                    {userPlan === 'free' ? (
+                                      <>
+                                        <button
+                                          onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                                          className="px-3 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all"
+                                        >
+                                          Unlock with Premium
+                                        </button>
+                                        <Button
+                                          onClick={() => { setActiveTenderDetail(tender); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                          className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg shadow-sm"
+                                        >
+                                          View (Locked)
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Button
+                                        onClick={() => { setActiveTenderDetail(tender); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                        className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg shadow-sm"
+                                      >
+                                        Explore Details
+                                      </Button>
+                                    )}
                                   </div>
                                 </div>
                               </Card>
@@ -1396,94 +1659,117 @@ export function WebApp() {
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Complete Description</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{activeTenderDetail.description}</p>
-              </div>
-
-              {/* Eligibility */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Minimum Bidder Qualification</h3>
-                <p className="text-slate-600 text-sm leading-relaxed bg-amber-50/50 p-4 rounded-xl border border-amber-100/50">{activeTenderDetail.eligibility}</p>
-              </div>
-
-              {/* Technical parameters */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Technical Information</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-600 leading-relaxed">
-                  <div>
-                    <span className="font-semibold block text-slate-700">Tender Reference ID:</span>
-                    <span className="font-mono text-slate-900">{activeTenderDetail.referenceNumber}</span>
+              {userPlan === 'free' ? (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-8 text-center space-y-4 shadow-sm animate-fadeIn">
+                  <span className="text-5xl block">🔒</span>
+                  <h3 className="text-lg font-black text-slate-900">Procurement Specifications Locked</h3>
+                  <p className="text-slate-600 text-xs max-w-md mx-auto leading-relaxed">
+                    Full access to engineering designs, bid documents checklists, L1/T1 appraisal paths, EMD guarantee details, and the bid submission portal is restricted to Premium subscribers.
+                  </p>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                      className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl shadow-md text-xs transition-all"
+                    >
+                      👑 Unlock with Premium
+                    </button>
                   </div>
-                  <div>
-                    <span className="font-semibold block text-slate-700">Published Date:</span>
-                    <span>{activeTenderDetail.publishedDate}</span>
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                    Free Plan Validity: 1 Month
                   </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Complete Description</h3>
+                    <p className="text-slate-600 text-sm leading-relaxed">{activeTenderDetail.description}</p>
+                  </div>
 
-              {/* Required Documents */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Bid Documents Checklist</h3>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-                  <p className="text-xs text-slate-500 mb-1">Upload exactly formatted bid files adhering to the compliance checklists below:</p>
-                  <ul className="space-y-1.5 text-slate-700 text-xs font-medium">
-                    {activeTenderDetail.requiredDocuments && activeTenderDetail.requiredDocuments.map((doc, idx) => (
-                      <li key={idx} className="flex items-center space-x-2">
-                        <span className="text-emerald-500 font-bold">✓</span>
-                        <span>{doc}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+                  {/* Eligibility */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Minimum Bidder Qualification</h3>
+                    <p className="text-slate-600 text-sm leading-relaxed bg-amber-50/50 p-4 rounded-xl border border-amber-100/50">{activeTenderDetail.eligibility}</p>
+                  </div>
 
-              {/* Selection Process */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Bidding & Evaluation (L1/T1 Methodology)</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{activeTenderDetail.selectionProcess}</p>
-              </div>
+                  {/* Technical parameters */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Technical Information</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-600 leading-relaxed">
+                      <div>
+                        <span className="font-semibold block text-slate-700">Tender Reference ID:</span>
+                        <span className="font-mono text-slate-900">{activeTenderDetail.referenceNumber}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold block text-slate-700">Published Date:</span>
+                        <span>{activeTenderDetail.publishedDate}</span>
+                      </div>
+                    </div>
+                  </div>
 
-              {/* Important Instructions */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Important Instructions & Guarantees</h3>
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-1">
-                  <span className="font-bold block">⚠️ EMD & Fee Guidelines:</span>
-                  <p>{activeTenderDetail.importantInstructions}</p>
-                </div>
-              </div>
+                  {/* Required Documents */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Bid Documents Checklist</h3>
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                      <p className="text-xs text-slate-500 mb-1">Upload exactly formatted bid files adhering to the compliance checklists below:</p>
+                      <ul className="space-y-1.5 text-slate-700 text-xs font-medium">
+                        {activeTenderDetail.requiredDocuments && activeTenderDetail.requiredDocuments.map((doc, idx) => (
+                          <li key={idx} className="flex items-center space-x-2">
+                            <span className="text-emerald-500 font-bold">✓</span>
+                            <span>{doc}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
 
-              {/* Actions & Dates */}
-              <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex flex-col text-xs text-slate-400 space-y-0.5">
-                  <span>Bidding Status: <strong className="text-amber-600 uppercase">{activeTenderDetail.status}</strong></span>
-                  <span>Official Portal Origin: <strong className="text-slate-600">{activeTenderDetail.officialSource}</strong></span>
-                </div>
-                <div className="flex space-x-3 w-full sm:w-auto">
-                  <a
-                    href={activeTenderDetail.officialWebsite}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-5 py-2.5 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-lg text-center flex-grow sm:flex-grow-0"
-                  >
-                    Official Portal
-                  </a>
-                  <Button
-                    onClick={() => handleTenderBidSubmit(activeTenderDetail.id)}
-                    disabled={activeTenderDetail.status !== 'Open' || submittedBids[activeTenderDetail.id]}
-                    className={`px-6 py-2.5 text-xs font-bold rounded-lg flex-grow sm:flex-grow-0 ${
-                      submittedBids[activeTenderDetail.id]
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
-                        : activeTenderDetail.status === 'Open'
-                        ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-500/10'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    }`}
-                  >
-                    {submittedBids[activeTenderDetail.id] ? '✓ Bid Submitted' : activeTenderDetail.status === 'Open' ? 'Place Bid' : 'Closed'}
-                  </Button>
-                </div>
-              </div>
+                  {/* Selection Process */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Bidding & Evaluation (L1/T1 Methodology)</h3>
+                    <p className="text-slate-600 text-sm leading-relaxed">{activeTenderDetail.selectionProcess}</p>
+                  </div>
+
+                  {/* Important Instructions */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Important Instructions & Guarantees</h3>
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-1">
+                      <span className="font-bold block">⚠️ EMD & Fee Guidelines:</span>
+                      <p>{activeTenderDetail.importantInstructions}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions & Dates */}
+                  <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex flex-col text-xs text-slate-400 space-y-0.5">
+                      <span>Bidding Status: <strong className="text-amber-600 uppercase">{activeTenderDetail.status}</strong></span>
+                      <span>Official Portal Origin: <strong className="text-slate-600">{activeTenderDetail.officialSource}</strong></span>
+                    </div>
+                    <div className="flex space-x-3 w-full sm:w-auto">
+                      <a
+                        href={activeTenderDetail.officialWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-5 py-2.5 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-lg text-center flex-grow sm:flex-grow-0"
+                      >
+                        Official Portal
+                      </a>
+                      <Button
+                        onClick={() => handleTenderBidSubmit(activeTenderDetail.id)}
+                        disabled={activeTenderDetail.status !== 'Open' || submittedBids[activeTenderDetail.id]}
+                        className={`px-6 py-2.5 text-xs font-bold rounded-lg flex-grow sm:flex-grow-0 ${
+                          submittedBids[activeTenderDetail.id]
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
+                            : activeTenderDetail.status === 'Open'
+                            ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-500/10'
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {submittedBids[activeTenderDetail.id] ? '✓ Bid Submitted' : activeTenderDetail.status === 'Open' ? 'Place Bid' : 'Closed'}
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Related opportunities */}
@@ -1599,7 +1885,13 @@ export function WebApp() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {paginatedFunding.map((fund) => {
                     return (
-                      <Card key={fund.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80">
+                      <Card key={fund.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80 relative overflow-hidden bg-white">
+                        {userPlan === 'free' && (
+                          <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm">
+                            <span>🔒</span>
+                            <span>Locked</span>
+                          </div>
+                        )}
                         <div className="space-y-4">
                           <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded">
                             {fund.sector} Support
@@ -1608,27 +1900,59 @@ export function WebApp() {
                           <div>
                             <h3 className="text-base font-bold text-slate-900 line-clamp-2">{fund.title}</h3>
                             <p className="text-xs font-semibold text-slate-600 mt-1">{fund.ministry}</p>
-                            <p className="text-[10px] text-slate-400 mt-0.5">{fund.department}</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">Date: {fund.publishedDate}</p>
                           </div>
 
-                          <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">{fund.description}</p>
+                          {userPlan === 'free' ? (
+                            <div className="p-3 bg-slate-50 border border-slate-150 rounded-xl flex items-center space-x-2 text-xs text-slate-500">
+                              <span>🔒</span>
+                              <span>Funding objectives locked on Free Plan.</span>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">{fund.description}</p>
+                          )}
                         </div>
 
                         <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col space-y-3">
                           <div className="bg-slate-50 p-2.5 rounded text-xs">
                             <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px]">Eligible Target</span>
-                            <span className="font-semibold text-slate-700 line-clamp-1">{fund.eligibility}</span>
+                            {userPlan === 'free' ? (
+                              <span className="text-xs font-bold text-slate-400">🔒 Locked</span>
+                            ) : (
+                              <span className="font-semibold text-slate-700 line-clamp-1">{fund.eligibility}</span>
+                            )}
                           </div>
 
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-black text-emerald-600">{fund.amount}</span>
+                            {userPlan === 'free' ? (
+                              <span className="text-xs font-bold text-slate-400">🔒 Locked</span>
+                            ) : (
+                              <span className="text-sm font-black text-emerald-600">{fund.amount}</span>
+                            )}
                             <div className="flex space-x-1.5">
-                              <Button
-                                onClick={() => { setActiveFundingDetail(fund); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                                className="px-2.5 py-1.5 text-[10px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
-                              >
-                                Explore Details
-                              </Button>
+                              {userPlan === 'free' ? (
+                                <>
+                                  <button
+                                    onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                                    className="px-2.5 py-1.5 text-[10px] font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all"
+                                  >
+                                    Unlock with Premium
+                                  </button>
+                                  <Button
+                                    onClick={() => { setActiveFundingDetail(fund); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                    className="px-2.5 py-1.5 text-[10px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
+                                  >
+                                    View (Locked)
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button
+                                  onClick={() => { setActiveFundingDetail(fund); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                  className="px-2.5 py-1.5 text-[10px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
+                                >
+                                  Explore Details
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1729,86 +2053,109 @@ export function WebApp() {
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Program Objective</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{activeFundingDetail.description}</p>
-              </div>
-
-              {/* Eligibility */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Target Eligibility Criteria</h3>
-                <p className="text-slate-600 text-sm leading-relaxed bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">{activeFundingDetail.eligibility}</p>
-              </div>
-
-              {/* Scheme benefits list */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Direct Advantages & Benefits</h3>
-                <ul className="list-disc list-inside space-y-1.5 text-slate-600 text-sm">
-                  {activeFundingDetail.benefits.map((benefit, index) => (
-                    <li key={index}>{benefit}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Required Documents */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Appraisal Documents Checklist</h3>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-                  <p className="text-xs text-slate-500 mb-1">Upload the following details checklist before the validation cycle starts:</p>
-                  <ul className="space-y-1.5 text-slate-700 text-xs font-medium">
-                    {activeFundingDetail.requiredDocuments && activeFundingDetail.requiredDocuments.map((doc, idx) => (
-                      <li key={idx} className="flex items-center space-x-2">
-                        <span className="text-emerald-500 font-bold">✓</span>
-                        <span>{doc}</span>
-                      </li>
-                    ))}
-                  </ul>
+              {userPlan === 'free' ? (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-8 text-center space-y-4 shadow-sm animate-fadeIn">
+                  <span className="text-5xl block">🔒</span>
+                  <h3 className="text-lg font-black text-slate-900">Grant Details Locked</h3>
+                  <p className="text-slate-600 text-xs max-w-md mx-auto leading-relaxed">
+                    Full access to detailed benefit breakdowns, application checklists, milestone distribution compliance rules, official scheme portals, and direct enrollment forms is restricted to Premium subscribers.
+                  </p>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                      className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl shadow-md text-xs transition-all"
+                    >
+                      👑 Unlock with Premium
+                    </button>
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                    Free Plan Validity: 1 Month
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Program Objective</h3>
+                    <p className="text-slate-600 text-sm leading-relaxed">{activeFundingDetail.description}</p>
+                  </div>
 
-              {/* Selection Process */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Incubation & Validation Cycle</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{activeFundingDetail.selectionProcess}</p>
-              </div>
+                  {/* Eligibility */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Target Eligibility Criteria</h3>
+                    <p className="text-slate-600 text-sm leading-relaxed bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">{activeFundingDetail.eligibility}</p>
+                  </div>
 
-              {/* Important Instructions */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Important Instructions & Compliance</h3>
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-1">
-                  <span className="font-bold block">⚠️ Milestones & Allocations:</span>
-                  <p>{activeFundingDetail.importantInstructions}</p>
-                </div>
-              </div>
+                  {/* Scheme benefits list */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Direct Advantages & Benefits</h3>
+                    <ul className="list-disc list-inside space-y-1.5 text-slate-600 text-sm">
+                      {activeFundingDetail.benefits.map((benefit, index) => (
+                        <li key={index}>{benefit}</li>
+                      ))}
+                    </ul>
+                  </div>
 
-              {/* Actions & Dates */}
-              <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex flex-col text-xs text-slate-400 space-y-0.5">
-                  <span>Published Date: <strong>{activeFundingDetail.publishedDate}</strong></span>
-                  <span>Scheme Source Gazette: <strong className="text-slate-600">{activeFundingDetail.officialSource}</strong></span>
-                </div>
-                <div className="flex space-x-3 w-full sm:w-auto">
-                  <a
-                    href={activeFundingDetail.officialWebsite}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-5 py-2.5 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-lg text-center flex-grow sm:flex-grow-0"
-                  >
-                    Official Portal
-                  </a>
-                  <Button
-                    onClick={() => handleGrantApplySubmit(activeFundingDetail.id)}
-                    className={`px-6 py-2.5 text-xs font-bold rounded-lg flex-grow sm:flex-grow-0 ${
-                      appliedGrants[activeFundingDetail.id]
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white'
-                    }`}
-                  >
-                    {appliedGrants[activeFundingDetail.id] ? '✓ Enrolled' : 'Apply Scheme'}
-                  </Button>
-                </div>
-              </div>
+                  {/* Required Documents */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Appraisal Documents Checklist</h3>
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                      <p className="text-xs text-slate-500 mb-1">Upload the following details checklist before the validation cycle starts:</p>
+                      <ul className="space-y-1.5 text-slate-700 text-xs font-medium">
+                        {activeFundingDetail.requiredDocuments && activeFundingDetail.requiredDocuments.map((doc, idx) => (
+                          <li key={idx} className="flex items-center space-x-2">
+                            <span className="text-emerald-500 font-bold">✓</span>
+                            <span>{doc}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Selection Process */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Incubation & Validation Cycle</h3>
+                    <p className="text-slate-600 text-sm leading-relaxed">{activeFundingDetail.selectionProcess}</p>
+                  </div>
+
+                  {/* Important Instructions */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Important Instructions & Compliance</h3>
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-1">
+                      <span className="font-bold block">⚠️ Milestones & Allocations:</span>
+                      <p>{activeFundingDetail.importantInstructions}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions & Dates */}
+                  <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex flex-col text-xs text-slate-400 space-y-0.5">
+                      <span>Published Date: <strong>{activeFundingDetail.publishedDate}</strong></span>
+                      <span>Scheme Source Gazette: <strong className="text-slate-600">{activeFundingDetail.officialSource}</strong></span>
+                    </div>
+                    <div className="flex space-x-3 w-full sm:w-auto">
+                      <a
+                        href={activeFundingDetail.officialWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-5 py-2.5 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-lg text-center flex-grow sm:flex-grow-0"
+                      >
+                        Official Portal
+                      </a>
+                      <Button
+                        onClick={() => handleGrantApplySubmit(activeFundingDetail.id)}
+                        className={`px-6 py-2.5 text-xs font-bold rounded-lg flex-grow sm:flex-grow-0 ${
+                          appliedGrants[activeFundingDetail.id]
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        }`}
+                      >
+                        {appliedGrants[activeFundingDetail.id] ? '✓ Enrolled' : 'Apply Scheme'}
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Related opportunities */}
