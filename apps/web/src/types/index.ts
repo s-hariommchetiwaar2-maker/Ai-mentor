@@ -20,6 +20,10 @@ export interface JobListing {
   requirements: string[];
   eligibility: string; // Eligibility criteria text
   officialWebsite: string; // URL link
+  requiredDocuments: string[]; // Required filings list
+  selectionProcess: string; // Evaluation path text
+  importantInstructions: string; // Core warning notes
+  officialSource: string; // Gazette/Authority origin name
 }
 
 export interface TenderListing {
@@ -41,6 +45,10 @@ export interface TenderListing {
   description: string;
   eligibility: string; // Minimum bidder qualification
   officialWebsite: string; // Tender portal URL
+  requiredDocuments: string[]; // Bid submission paperwork
+  selectionProcess: string; // L1/T1 appraisal path
+  importantInstructions: string; // Guarantee/warning indices
+  officialSource: string; // E-Procurement notice origin name
 }
 
 export interface FundingScheme {
@@ -60,6 +68,10 @@ export interface FundingScheme {
   description: string;
   benefits: string[];
   officialWebsite: string; // Scheme details portal URL
+  requiredDocuments: string[]; // Appraisal documents list
+  selectionProcess: string; // Incubation validation cycle
+  importantInstructions: string; // Milestones/compliance indices
+  officialSource: string; // Central Scheme gazette name
 }
 
 export interface ContactInquiry {

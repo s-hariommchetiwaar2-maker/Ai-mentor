@@ -909,9 +909,43 @@ export function WebApp() {
                 </ul>
               </div>
 
+              {/* Required Documents */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Required Documents Checklist</h3>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                  <p className="text-xs text-slate-500 mb-1">Please ensure you have scanned copies of the following documents ready before submitting your application:</p>
+                  <ul className="space-y-1.5 text-slate-700 text-xs font-medium">
+                    {activeJobDetail.requiredDocuments && activeJobDetail.requiredDocuments.map((doc, idx) => (
+                      <li key={idx} className="flex items-center space-x-2">
+                        <span className="text-emerald-500 font-bold">✓</span>
+                        <span>{doc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Selection Process */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Selection & Evaluation Process</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{activeJobDetail.selectionProcess}</p>
+              </div>
+
+              {/* Important Instructions */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Important Instructions</h3>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-1">
+                  <span className="font-bold block">⚠️ Crucial Warning Notes:</span>
+                  <p>{activeJobDetail.importantInstructions}</p>
+                </div>
+              </div>
+
               {/* Actions & Dates */}
               <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <span className="text-xs text-slate-400 font-medium">Published Date: {activeJobDetail.publishedDate}</span>
+                <div className="flex flex-col text-xs text-slate-400 space-y-0.5">
+                  <span>Published Date: <strong>{activeJobDetail.publishedDate}</strong></span>
+                  <span>Official Gazette/Source: <strong className="text-slate-600">{activeJobDetail.officialSource}</strong></span>
+                </div>
                 <div className="flex space-x-3 w-full sm:w-auto">
                   <a
                     href={activeJobDetail.officialWebsite}
@@ -1207,9 +1241,43 @@ export function WebApp() {
                 </div>
               </div>
 
+              {/* Required Documents */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Bid Documents Checklist</h3>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                  <p className="text-xs text-slate-500 mb-1">Upload exactly formatted bid files adhering to the compliance checklists below:</p>
+                  <ul className="space-y-1.5 text-slate-700 text-xs font-medium">
+                    {activeTenderDetail.requiredDocuments && activeTenderDetail.requiredDocuments.map((doc, idx) => (
+                      <li key={idx} className="flex items-center space-x-2">
+                        <span className="text-emerald-500 font-bold">✓</span>
+                        <span>{doc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Selection Process */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Bidding & Evaluation (L1/T1 Methodology)</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{activeTenderDetail.selectionProcess}</p>
+              </div>
+
+              {/* Important Instructions */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Important Instructions & Guarantees</h3>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-1">
+                  <span className="font-bold block">⚠️ EMD & Fee Guidelines:</span>
+                  <p>{activeTenderDetail.importantInstructions}</p>
+                </div>
+              </div>
+
               {/* Actions & Dates */}
               <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <span className="text-xs text-slate-400 font-medium">Bidding Status: <strong className="text-amber-600 uppercase">{activeTenderDetail.status}</strong></span>
+                <div className="flex flex-col text-xs text-slate-400 space-y-0.5">
+                  <span>Bidding Status: <strong className="text-amber-600 uppercase">{activeTenderDetail.status}</strong></span>
+                  <span>Official Portal Origin: <strong className="text-slate-600">{activeTenderDetail.officialSource}</strong></span>
+                </div>
                 <div className="flex space-x-3 w-full sm:w-auto">
                   <a
                     href={activeTenderDetail.officialWebsite}
@@ -1501,9 +1569,43 @@ export function WebApp() {
                 </ul>
               </div>
 
+              {/* Required Documents */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Appraisal Documents Checklist</h3>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                  <p className="text-xs text-slate-500 mb-1">Upload the following details checklist before the validation cycle starts:</p>
+                  <ul className="space-y-1.5 text-slate-700 text-xs font-medium">
+                    {activeFundingDetail.requiredDocuments && activeFundingDetail.requiredDocuments.map((doc, idx) => (
+                      <li key={idx} className="flex items-center space-x-2">
+                        <span className="text-emerald-500 font-bold">✓</span>
+                        <span>{doc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Selection Process */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Incubation & Validation Cycle</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{activeFundingDetail.selectionProcess}</p>
+              </div>
+
+              {/* Important Instructions */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Important Instructions & Compliance</h3>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-1">
+                  <span className="font-bold block">⚠️ Milestones & Allocations:</span>
+                  <p>{activeFundingDetail.importantInstructions}</p>
+                </div>
+              </div>
+
               {/* Actions & Dates */}
               <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <span className="text-xs text-slate-400 font-medium">Published Date: {activeFundingDetail.publishedDate}</span>
+                <div className="flex flex-col text-xs text-slate-400 space-y-0.5">
+                  <span>Published Date: <strong>{activeFundingDetail.publishedDate}</strong></span>
+                  <span>Scheme Source Gazette: <strong className="text-slate-600">{activeFundingDetail.officialSource}</strong></span>
+                </div>
                 <div className="flex space-x-3 w-full sm:w-auto">
                   <a
                     href={activeFundingDetail.officialWebsite}
