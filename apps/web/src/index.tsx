@@ -127,6 +127,57 @@ export const Pagination: React.FC<PaginationProps> = ({
 };
 
 // -----------------------------------------------------------------------------
+// Helper to resolve cover/placeholder images for Jobs, Tenders, and Funding
+// -----------------------------------------------------------------------------
+const getListingImage = (item: { image?: string; category?: string; industry?: string; sector?: string }) => {
+  if (item.image) return item.image;
+
+  const tag = (item.category || item.industry || item.sector || '').toLowerCase();
+
+  if (tag.includes('infrastructure') || tag.includes('building') || tag.includes('construction') || tag.includes('central') || tag.includes('state')) {
+    return 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('road') || tag.includes('highway')) {
+    return 'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('airport') || tag.includes('aviation') || tag.includes('defence')) {
+    return 'https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('rail') || tag.includes('metro')) {
+    return 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('power') || tag.includes('energy')) {
+    return 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('water')) {
+    return 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('healthcare') || tag.includes('health') || tag.includes('clinic')) {
+    return 'https://images.unsplash.com/photo-1584515901407-d8f468315264?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('education') || tag.includes('teach') || tag.includes('class')) {
+    return 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('it') || tag.includes('digital') || tag.includes('tech') || tag.includes('software')) {
+    return 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('agri') || tag.includes('farm')) {
+    return 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('port') || tag.includes('ship')) {
+    return 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('mining') || tag.includes('oil')) {
+    return 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=600&q=80';
+  }
+  if (tag.includes('bank') || tag.includes('finance') || tag.includes('credit') || tag.includes('startup') || tag.includes('msme') || tag.includes('research') || tag.includes('innovation')) {
+    return 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=600&q=80';
+  }
+
+  return 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80';
+};
+
+// -----------------------------------------------------------------------------
 // WebApp Main Root Component
 // -----------------------------------------------------------------------------
 export function WebApp() {
@@ -946,14 +997,17 @@ export function WebApp() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {paginatedJobs.map((job) => (
-                    <Card key={job.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80 relative overflow-hidden bg-white">
+                    <Card key={job.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80 relative overflow-hidden bg-white p-0">
                       {userPlan === 'free' && (
-                        <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm">
+                        <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm z-10">
                           <span>🔒</span>
                           <span>Locked</span>
                         </div>
                       )}
-                      <div className="space-y-4">
+                      <div className="h-40 w-full overflow-hidden relative">
+                        <img src={getListingImage(job)} alt={job.title} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="space-y-4 p-5">
                         <div className="flex justify-between items-start gap-2">
                           <div className="flex flex-wrap gap-1.5">
                             <span className="bg-blue-100 text-blue-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
@@ -980,7 +1034,7 @@ export function WebApp() {
                         )}
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                      <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between mx-5 mb-5">
                         <div>
                           <span className="text-[10px] text-slate-400 block font-medium uppercase tracking-wider">Salary Indication</span>
                           {userPlan === 'free' ? (
@@ -1077,6 +1131,9 @@ export function WebApp() {
 
             {/* Core Details Panel */}
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="h-64 w-full overflow-hidden rounded-xl relative shadow-inner">
+                <img src={getListingImage(activeJobDetail)} alt={activeJobDetail.title} className="w-full h-full object-cover" />
+              </div>
               <div className="flex justify-between items-start flex-wrap gap-4 border-b border-slate-100 pb-5">
                 <div className="space-y-2">
                   <span className="bg-blue-100 text-blue-800 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded">
@@ -1489,14 +1546,17 @@ export function WebApp() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
                           {paginatedTenders.map((tender) => {
                             return (
-                              <Card key={tender.id} className="hover:shadow-md transition-all flex flex-col justify-between border-slate-200/80 bg-white p-5 relative overflow-hidden">
+                              <Card key={tender.id} className="hover:shadow-md transition-all flex flex-col justify-between border-slate-200/80 bg-white p-0 relative overflow-hidden">
                                 {userPlan === 'free' && (
-                                  <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm">
+                                  <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm z-10">
                                     <span>🔒</span>
                                     <span>Locked</span>
                                   </div>
                                 )}
-                                <div className="space-y-4">
+                                <div className="h-40 w-full overflow-hidden relative">
+                                  <img src={getListingImage(tender)} alt={tender.title} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="space-y-4 p-5">
                                   <div className="flex justify-between items-start gap-2">
                                     <span className="bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
                                       {TENDER_CATEGORY_ICONS[tender.industry] || '📋'} {tender.industry}
@@ -1522,7 +1582,7 @@ export function WebApp() {
                                   )}
                                 </div>
 
-                                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                                <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between mx-5 mb-5">
                                   <div>
                                     <span className="text-[9px] text-slate-400 block font-semibold uppercase tracking-wider">Estimated Budget</span>
                                     {userPlan === 'free' ? (
@@ -1625,6 +1685,9 @@ export function WebApp() {
 
             {/* Core Details Panel */}
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="h-64 w-full overflow-hidden rounded-xl relative shadow-inner">
+                <img src={getListingImage(activeTenderDetail)} alt={activeTenderDetail.title} className="w-full h-full object-cover" />
+              </div>
               <div className="flex justify-between items-start flex-wrap gap-4 border-b border-slate-100 pb-5">
                 <div className="space-y-2">
                   <span className="bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded">
@@ -1885,14 +1948,17 @@ export function WebApp() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {paginatedFunding.map((fund) => {
                     return (
-                      <Card key={fund.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80 relative overflow-hidden bg-white">
+                      <Card key={fund.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80 relative overflow-hidden bg-white p-0">
                         {userPlan === 'free' && (
-                          <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm">
+                          <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm z-10">
                             <span>🔒</span>
                             <span>Locked</span>
                           </div>
                         )}
-                        <div className="space-y-4">
+                        <div className="h-40 w-full overflow-hidden relative">
+                          <img src={getListingImage(fund)} alt={fund.title} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="space-y-4 p-5">
                           <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded">
                             {fund.sector} Support
                           </span>
@@ -1913,7 +1979,7 @@ export function WebApp() {
                           )}
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col space-y-3">
+                        <div className="mt-auto pt-4 border-t border-slate-100 flex flex-col space-y-3 mx-5 mb-5">
                           <div className="bg-slate-50 p-2.5 rounded text-xs">
                             <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px]">Eligible Target</span>
                             {userPlan === 'free' ? (
@@ -2019,6 +2085,9 @@ export function WebApp() {
 
             {/* Core Details Panel */}
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="h-64 w-full overflow-hidden rounded-xl relative shadow-inner">
+                <img src={getListingImage(activeFundingDetail)} alt={activeFundingDetail.title} className="w-full h-full object-cover" />
+              </div>
               <div className="flex justify-between items-start flex-wrap gap-4 border-b border-slate-100 pb-5">
                 <div className="space-y-2">
                   <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded">

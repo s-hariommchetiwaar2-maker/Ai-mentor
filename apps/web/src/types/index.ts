@@ -7,6 +7,7 @@ export interface JobListing {
   title: string;
   agency: string;
   department: string;
+  image?: string; // Optional cover image path
   ministry: string;
   location: string;
   country: string; // Country filter
@@ -33,6 +34,7 @@ export interface TenderListing {
   title: string;
   authority: string;
   department: string;
+  image?: string; // Optional cover image path
   ministry: string;
   referenceNumber: string;
   value: string;
@@ -58,6 +60,7 @@ export interface FundingScheme {
   title: string;
   ministry: string;
   department: string;
+  image?: string; // Optional cover image path
   amount: string;
   amountNumeric: number; // For sorting by grant size
   eligibility: string;
