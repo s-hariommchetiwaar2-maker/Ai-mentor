@@ -172,10 +172,14 @@ export function WebApp() {
   const [contactError, setContactError] = useState<string>('');
   const [generatedTicketId, setGeneratedTicketId] = useState<string>('');
 
-  // Active inspectors for detail modals (Pure frontend state representation)
+  // Active inspectors for detail pages (Phase Opportunity Details implementation)
   const [activeJobDetail, setActiveJobDetail] = useState<JobListing | null>(null);
   const [activeTenderDetail, setActiveTenderDetail] = useState<TenderListing | null>(null);
   const [activeFundingDetail, setActiveFundingDetail] = useState<FundingScheme | null>(null);
+
+  // Bookmarking and sharing state triggers (Phase 4 requirement)
+  const [bookmarkedItems, setBookmarkedItems] = useState<Record<string, boolean>>({});
+  const [sharedAlert, setSharedAlert] = useState<string | null>(null);
 
   // Global search text
   const [globalHomeSearch, setGlobalHomeSearch] = useState('');
@@ -247,6 +251,28 @@ export function WebApp() {
     const startIndex = (fundingPage - 1) * ITEMS_PER_PAGE;
     return filteredAndSortedFunding.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredAndSortedFunding, fundingPage]);
+
+  // Related opportunities finders (based on matches in state, ministry, or industry category)
+  const relatedJobs = useMemo(() => {
+    if (!activeJobDetail) return [];
+    return jobs.filter(
+      (j) => j.id !== activeJobDetail.id && (j.category === activeJobDetail.category || j.state === activeJobDetail.state)
+    ).slice(0, 3);
+  }, [activeJobDetail, jobs]);
+
+  const relatedTenders = useMemo(() => {
+    if (!activeTenderDetail) return [];
+    return tenders.filter(
+      (t) => t.id !== activeTenderDetail.id && (t.industry === activeTenderDetail.industry || t.state === activeTenderDetail.state)
+    ).slice(0, 3);
+  }, [activeTenderDetail, tenders]);
+
+  const relatedFunding = useMemo(() => {
+    if (!activeFundingDetail) return [];
+    return fundingSchemes.filter(
+      (f) => f.id !== activeFundingDetail.id && (f.sector === activeFundingDetail.sector || f.state === activeFundingDetail.state)
+    ).slice(0, 3);
+  }, [activeFundingDetail, fundingSchemes]);
 
   // Derived filter unique categories
   const jobCategories = ['All', 'Central', 'State', 'Railway', 'Banking', 'Defence', 'Police', 'Teaching', 'PSU', 'Judiciary', 'Healthcare', 'Engineering', 'Apprenticeship'];
@@ -329,8 +355,28 @@ export function WebApp() {
     }
   };
 
+  const handleToggleBookmark = (id: string) => {
+    setBookmarkedItems((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleShareClick = (title: string) => {
+    const textAlert = `Link copied: "${title}" is ready to share!`;
+    setSharedAlert(textAlert);
+    setTimeout(() => {
+      setSharedAlert(null);
+    }, 3000);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans animate-fadeIn">
+      {/* Global Share Toast Notification Alert */}
+      {sharedAlert && (
+        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 animate-slideIn">
+          <span>🔗</span>
+          <span>{sharedAlert}</span>
+        </div>
+      )}
+
       {/* Header Layout */}
       <header className="bg-slate-950 text-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -366,7 +412,7 @@ export function WebApp() {
                 Home
               </button>
               <button
-                onClick={() => setCurrentView('jobs')}
+                onClick={() => { setCurrentView('jobs'); setActiveJobDetail(null); }}
                 className={`text-sm font-semibold px-3 py-2 rounded-md transition-all duration-200 ${
                   currentView === 'jobs'
                     ? 'text-white bg-slate-800 shadow-inner'
@@ -376,7 +422,7 @@ export function WebApp() {
                 Government Jobs
               </button>
               <button
-                onClick={() => setCurrentView('tenders')}
+                onClick={() => { setCurrentView('tenders'); setActiveTenderDetail(null); }}
                 className={`text-sm font-semibold px-3 py-2 rounded-md transition-all duration-200 ${
                   currentView === 'tenders'
                     ? 'text-white bg-slate-800 shadow-inner'
@@ -386,7 +432,7 @@ export function WebApp() {
                 Government Tenders
               </button>
               <button
-                onClick={() => setCurrentView('funding')}
+                onClick={() => { setCurrentView('funding'); setActiveFundingDetail(null); }}
                 className={`text-sm font-semibold px-3 py-2 rounded-md transition-all duration-200 ${
                   currentView === 'funding'
                     ? 'text-white bg-slate-800 shadow-inner'
@@ -432,7 +478,7 @@ export function WebApp() {
               Home
             </button>
             <button
-              onClick={() => { setCurrentView('jobs'); setIsMobileMenuOpen(false); }}
+              onClick={() => { setCurrentView('jobs'); setActiveJobDetail(null); setIsMobileMenuOpen(false); }}
               className={`block w-full text-left text-sm font-semibold px-3 py-2.5 rounded-md transition-colors ${
                 currentView === 'jobs' ? 'text-white bg-slate-800' : 'text-slate-300 hover:text-white hover:bg-slate-800'
               }`}
@@ -440,7 +486,7 @@ export function WebApp() {
               Government Jobs
             </button>
             <button
-              onClick={() => { setCurrentView('tenders'); setIsMobileMenuOpen(false); }}
+              onClick={() => { setCurrentView('tenders'); setActiveTenderDetail(null); setIsMobileMenuOpen(false); }}
               className={`block w-full text-left text-sm font-semibold px-3 py-2.5 rounded-md transition-colors ${
                 currentView === 'tenders' ? 'text-white bg-slate-800' : 'text-slate-300 hover:text-white hover:bg-slate-800'
               }`}
@@ -448,7 +494,7 @@ export function WebApp() {
               Government Tenders
             </button>
             <button
-              onClick={() => { setCurrentView('funding'); setIsMobileMenuOpen(false); }}
+              onClick={() => { setCurrentView('funding'); setActiveFundingDetail(null); setIsMobileMenuOpen(false); }}
               className={`block w-full text-left text-sm font-semibold px-3 py-2.5 rounded-md transition-colors ${
                 currentView === 'funding' ? 'text-white bg-slate-800' : 'text-slate-300 hover:text-white hover:bg-slate-800'
               }`}
@@ -495,7 +541,7 @@ export function WebApp() {
                     <span className="absolute left-4 top-3.5 text-slate-400 text-lg">🔍</span>
                     <input
                       type="text"
-                      placeholder="Search jobs, bids, or grant systems (e.g. 'Solutions', 'Solar', 'Startup', 'MSME')..."
+                      placeholder="Search jobs, bids, or grant systems (e.g. 'Solutions', 'Solar', 'Startup', 'MSME')...."
                       value={globalHomeSearch}
                       onChange={(e) => setGlobalHomeSearch(e.target.value)}
                       className="w-full pl-11 pr-4 py-3.5 bg-white/10 backdrop-blur border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:text-slate-900 transition-all text-sm placeholder:text-slate-400"
@@ -624,7 +670,7 @@ export function WebApp() {
         )}
 
         {/* VIEW: GOVERNMENT JOBS */}
-        {currentView === 'jobs' && (
+        {currentView === 'jobs' && !activeJobDetail && (
           <div className="space-y-8 animate-fadeIn">
             {/* Header */}
             <div className="border-b border-slate-200 pb-5">
@@ -648,21 +694,21 @@ export function WebApp() {
                 />
               </div>
 
-              {/* Category selector */}
+              {/* Sector classification filter */}
               <div>
                 <select
                   value={selectedJobCategory}
                   onChange={(e) => { setSelectedJobCategory(e.target.value); setJobsPage(1); }}
                   className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700 font-medium"
                 >
-                  <option value="All">All Categories</option>
+                  <option value="All">All Sectors</option>
                   {jobCategories.slice(1).map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
               </div>
 
-              {/* State filter */}
+              {/* State-based filter */}
               <div>
                 <select
                   value={selectedJobState}
@@ -738,20 +784,10 @@ export function WebApp() {
                         </div>
                         <div className="flex space-x-2">
                           <Button
-                            onClick={() => setActiveJobDetail(job)}
+                            onClick={() => { setActiveJobDetail(job); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                             className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
                           >
-                            Requirements
-                          </Button>
-                          <Button
-                            onClick={() => handleApplyAction(job.id)}
-                            className={`px-4 py-1.5 text-xs font-bold rounded ${
-                              hasApplied[job.id]
-                                ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
-                                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/10'
-                            }`}
-                          >
-                            {hasApplied[job.id] ? '✓ Applied' : 'Apply Now'}
+                            Explore Details
                           </Button>
                         </div>
                       </div>
@@ -781,81 +817,152 @@ export function WebApp() {
                 </Button>
               </div>
             )}
+          </div>
+        )}
 
-            {/* Requirements Inspect Modal */}
-            {activeJobDetail && (
-              <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-                <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scaleUp space-y-5">
-                  <div className="flex justify-between items-start border-b border-slate-100 pb-4">
-                    <div>
-                      <span className="bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded">
-                        {activeJobDetail.category} Sector Vacancy
-                      </span>
-                      <h3 className="text-xl font-bold text-slate-900 mt-2">{activeJobDetail.title}</h3>
-                      <p className="text-xs font-bold text-slate-500 mt-1">{activeJobDetail.agency}</p>
-                    </div>
-                    <button
-                      onClick={() => setActiveJobDetail(null)}
-                      className="text-slate-400 hover:text-slate-600 font-mono text-xl p-1"
-                    >
-                      ✕
-                    </button>
-                  </div>
+        {/* VIEW: GOVERNMENT JOBS DETAIL PAGE */}
+        {currentView === 'jobs' && activeJobDetail && (
+          <div className="space-y-8 animate-fadeIn max-w-4xl mx-auto">
+            {/* Header actions */}
+            <div className="flex justify-between items-center">
+              <Button
+                onClick={() => setActiveJobDetail(null)}
+                className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg"
+              >
+                &larr; Back to Listings
+              </Button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleToggleBookmark(activeJobDetail.id)}
+                  className={`px-3 py-2 rounded-lg border text-xs font-bold transition-colors ${
+                    bookmarkedItems[activeJobDetail.id]
+                      ? 'bg-amber-500 border-amber-600 text-white'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {bookmarkedItems[activeJobDetail.id] ? '★ Bookmarked' : '☆ Bookmark'}
+                </button>
+                <button
+                  onClick={() => handleShareClick(activeJobDetail.title)}
+                  className="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg"
+                >
+                  Share
+                </button>
+              </div>
+            </div>
 
-                  <div className="space-y-4 text-sm text-slate-600 max-h-[300px] overflow-y-auto pr-1">
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-slate-900">Job Description:</h4>
-                      <p className="leading-relaxed text-xs">{activeJobDetail.description}</p>
-                    </div>
-
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-slate-900 text-xs">Department Classification:</h4>
-                      <p className="leading-relaxed text-xs">{activeJobDetail.department} ({activeJobDetail.ministry})</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h4 className="font-bold text-slate-900">Applicant Requirements:</h4>
-                      <ul className="list-disc list-inside space-y-1 text-xs">
-                        {activeJobDetail.requirements.map((req, index) => (
-                          <li key={index}>{req}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg text-xs">
-                      <div>
-                        <span className="text-slate-400 block font-medium">Salary Indicator</span>
-                        <span className="font-bold text-slate-800">{activeJobDetail.salaryRange}</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-400 block font-medium">State & country</span>
-                        <span className="font-bold text-slate-800">{activeJobDetail.location} ({activeJobDetail.state}, {activeJobDetail.country})</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                    <Button
-                      onClick={() => setActiveJobDetail(null)}
-                      className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200"
-                    >
-                      Close Details
-                    </Button>
-                    <Button
-                      onClick={() => { handleApplyAction(activeJobDetail.id); setActiveJobDetail(null); }}
-                      className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded"
-                    >
-                      {hasApplied[activeJobDetail.id] ? '✓ Applied' : 'Apply Now'}
-                    </Button>
-                  </div>
+            {/* Core Details Panel */}
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="flex justify-between items-start flex-wrap gap-4 border-b border-slate-100 pb-5">
+                <div className="space-y-2">
+                  <span className="bg-blue-100 text-blue-800 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded">
+                    {activeJobDetail.category} Sector Vacancy
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{activeJobDetail.title}</h1>
+                  <p className="text-sm font-semibold text-slate-600">{activeJobDetail.agency}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-slate-400 block font-medium">Monthly/Annual Salary</span>
+                  <span className="text-xl font-black text-blue-600">{activeJobDetail.salaryRange}</span>
                 </div>
               </div>
-            )}
+
+              {/* Informational parameters */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl text-xs">
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Ministry</span>
+                  <span className="font-bold text-slate-800">{activeJobDetail.ministry}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Department</span>
+                  <span className="font-bold text-slate-800">{activeJobDetail.department}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">State & Country</span>
+                  <span className="font-bold text-slate-800">{activeJobDetail.location} ({activeJobDetail.state}, {activeJobDetail.country})</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Application Deadline</span>
+                  <span className="font-black text-red-600">{activeJobDetail.deadline}</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Complete Description</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{activeJobDetail.description}</p>
+              </div>
+
+              {/* Eligibility */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Eligibility Checklist</h3>
+                <p className="text-slate-600 text-sm leading-relaxed bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">{activeJobDetail.eligibility}</p>
+              </div>
+
+              {/* Requirements list */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-blue-600 pl-2">Mandatory Qualifications</h3>
+                <ul className="list-disc list-inside space-y-1.5 text-slate-600 text-sm">
+                  {activeJobDetail.requirements.map((req, index) => (
+                    <li key={index}>{req}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Actions & Dates */}
+              <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <span className="text-xs text-slate-400 font-medium">Published Date: {activeJobDetail.publishedDate}</span>
+                <div className="flex space-x-3 w-full sm:w-auto">
+                  <a
+                    href={activeJobDetail.officialWebsite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-lg text-center flex-grow sm:flex-grow-0"
+                  >
+                    Official Website
+                  </a>
+                  <Button
+                    onClick={() => handleApplyAction(activeJobDetail.id)}
+                    className={`px-6 py-2.5 text-xs font-bold rounded-lg flex-grow sm:flex-grow-0 ${
+                      hasApplied[activeJobDetail.id]
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/10'
+                    }`}
+                  >
+                    {hasApplied[activeJobDetail.id] ? '✓ Applied' : 'Apply Opportunity'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Related opportunities */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-black text-slate-900">Related Career Opportunities</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {relatedJobs.map((rj) => (
+                  <Card key={rj.id} className="p-4 border-slate-200/80 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                      <span className="bg-slate-100 text-slate-600 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                        {rj.category} Sector
+                      </span>
+                      <h4 className="font-bold text-slate-900 text-sm mt-2 line-clamp-1">{rj.title}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{rj.agency}</p>
+                    </div>
+                    <Button
+                      onClick={() => { setActiveJobDetail(rj); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      className="mt-4 text-[10px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 w-full py-1.5"
+                    >
+                      View Details
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
         {/* VIEW: GOVERNMENT TENDERS */}
-        {currentView === 'tenders' && (
+        {currentView === 'tenders' && !activeTenderDetail && (
           <div className="space-y-8 animate-fadeIn">
             {/* Header */}
             <div className="border-b border-slate-200 pb-5">
@@ -940,9 +1047,6 @@ export function WebApp() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {paginatedTenders.map((tender) => {
-                    const isSubmitted = submittedBids[tender.id];
-                    const isOpen = tender.status === 'Open';
-
                     return (
                       <Card key={tender.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80">
                         <div className="space-y-4">
@@ -972,23 +1076,10 @@ export function WebApp() {
 
                           <div className="flex space-x-2">
                             <Button
-                              onClick={() => setActiveTenderDetail(tender)}
+                              onClick={() => { setActiveTenderDetail(tender); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                               className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
                             >
-                              Details
-                            </Button>
-                            <Button
-                              onClick={() => isOpen && handleTenderBidSubmit(tender.id)}
-                              disabled={!isOpen || isSubmitted}
-                              className={`px-4 py-1.5 text-xs font-bold rounded ${
-                                isSubmitted
-                                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
-                                  : isOpen
-                                  ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm'
-                                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                              }`}
-                            >
-                              {isSubmitted ? '✓ Bid Submitted' : isOpen ? 'Place Bid' : 'Closed'}
+                              Explore Details
                             </Button>
                           </div>
                         </div>
@@ -1019,87 +1110,160 @@ export function WebApp() {
                 </Button>
               </div>
             )}
+          </div>
+        )}
 
-            {/* Tender Detail Inspect Modal */}
-            {activeTenderDetail && (
-              <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-                <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scaleUp space-y-5">
-                  <div className="flex justify-between items-start border-b border-slate-100 pb-4">
-                    <div>
-                      <span className="bg-slate-100 text-slate-700 text-[10px] font-mono px-2 py-1 rounded">
-                        Ref Reference: {activeTenderDetail.referenceNumber}
-                      </span>
-                      <h3 className="text-xl font-bold text-slate-900 mt-2">{activeTenderDetail.title}</h3>
-                      <p className="text-xs font-bold text-slate-500 mt-1">{activeTenderDetail.authority}</p>
-                    </div>
-                    <button
-                      onClick={() => setActiveTenderDetail(null)}
-                      className="text-slate-400 hover:text-slate-600 font-mono text-xl p-1"
-                    >
-                      ✕
-                    </button>
+        {/* VIEW: GOVERNMENT TENDERS DETAIL PAGE */}
+        {currentView === 'tenders' && activeTenderDetail && (
+          <div className="space-y-8 animate-fadeIn max-w-4xl mx-auto">
+            {/* Header actions */}
+            <div className="flex justify-between items-center">
+              <Button
+                onClick={() => setActiveTenderDetail(null)}
+                className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg"
+              >
+                &larr; Back to Listings
+              </Button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleToggleBookmark(activeTenderDetail.id)}
+                  className={`px-3 py-2 rounded-lg border text-xs font-bold transition-colors ${
+                    bookmarkedItems[activeTenderDetail.id]
+                      ? 'bg-amber-500 border-amber-600 text-white'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {bookmarkedItems[activeTenderDetail.id] ? '★ Bookmarked' : '☆ Bookmark'}
+                </button>
+                <button
+                  onClick={() => handleShareClick(activeTenderDetail.title)}
+                  className="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg"
+                >
+                  Share
+                </button>
+              </div>
+            </div>
+
+            {/* Core Details Panel */}
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="flex justify-between items-start flex-wrap gap-4 border-b border-slate-100 pb-5">
+                <div className="space-y-2">
+                  <span className="bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded">
+                    {activeTenderDetail.industry} Industry Bid
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{activeTenderDetail.title}</h1>
+                  <p className="text-sm font-semibold text-slate-600">Procurement Authority: {activeTenderDetail.authority}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-slate-400 block font-medium">Estimated Value Budget</span>
+                  <span className="text-xl font-black text-amber-600">{activeTenderDetail.value}</span>
+                </div>
+              </div>
+
+              {/* Informational parameters */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl text-xs">
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Ministry</span>
+                  <span className="font-bold text-slate-800">{activeTenderDetail.ministry}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Department</span>
+                  <span className="font-bold text-slate-800">{activeTenderDetail.department}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Site State & Country</span>
+                  <span className="font-bold text-slate-800">{activeTenderDetail.location} ({activeTenderDetail.state}, {activeTenderDetail.country})</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Bidding Deadline</span>
+                  <span className="font-black text-red-600">{activeTenderDetail.deadline}</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Complete Description</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{activeTenderDetail.description}</p>
+              </div>
+
+              {/* Eligibility */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Minimum Bidder Qualification</h3>
+                <p className="text-slate-600 text-sm leading-relaxed bg-amber-50/50 p-4 rounded-xl border border-amber-100/50">{activeTenderDetail.eligibility}</p>
+              </div>
+
+              {/* Technical parameters */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-amber-600 pl-2">Technical Information</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-600 leading-relaxed">
+                  <div>
+                    <span className="font-semibold block text-slate-700">Tender Reference ID:</span>
+                    <span className="font-mono text-slate-900">{activeTenderDetail.referenceNumber}</span>
                   </div>
-
-                  <div className="space-y-4 text-sm text-slate-600">
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-slate-900">Procurement Objective:</h4>
-                      <p className="leading-relaxed text-xs">{activeTenderDetail.description}</p>
-                    </div>
-
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-slate-900 text-xs">Department Classification:</h4>
-                      <p className="leading-relaxed text-xs">{activeTenderDetail.department} ({activeTenderDetail.ministry})</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl text-xs">
-                      <div>
-                        <span className="text-slate-400 block font-medium">Estimated Value</span>
-                        <span className="font-extrabold text-slate-800 text-sm">{activeTenderDetail.value}</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-400 block font-medium">Submission Deadline</span>
-                        <span className="font-bold text-slate-800">{activeTenderDetail.deadline}</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-400 block font-medium">Published Date</span>
-                        <span className="font-medium text-slate-800">{activeTenderDetail.publishedDate}</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-400 block font-medium">Site Location</span>
-                        <span className="font-bold text-slate-800">{activeTenderDetail.location} ({activeTenderDetail.state}, {activeTenderDetail.country})</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                    <Button
-                      onClick={() => setActiveTenderDetail(null)}
-                      className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200"
-                    >
-                      Close Details
-                    </Button>
-                    <Button
-                      disabled={activeTenderDetail.status !== 'Open' || submittedBids[activeTenderDetail.id]}
-                      onClick={() => { handleTenderBidSubmit(activeTenderDetail.id); setActiveTenderDetail(null); }}
-                      className={`px-5 py-2 text-xs font-bold rounded ${
-                        submittedBids[activeTenderDetail.id]
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
-                          : activeTenderDetail.status === 'Open'
-                          ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      }`}
-                    >
-                      {submittedBids[activeTenderDetail.id] ? '✓ Bid Submitted' : activeTenderDetail.status === 'Open' ? 'Place Bid' : 'Closed'}
-                    </Button>
+                  <div>
+                    <span className="font-semibold block text-slate-700">Published Date:</span>
+                    <span>{activeTenderDetail.publishedDate}</span>
                   </div>
                 </div>
               </div>
-            )}
+
+              {/* Actions & Dates */}
+              <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <span className="text-xs text-slate-400 font-medium">Bidding Status: <strong className="text-amber-600 uppercase">{activeTenderDetail.status}</strong></span>
+                <div className="flex space-x-3 w-full sm:w-auto">
+                  <a
+                    href={activeTenderDetail.officialWebsite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-lg text-center flex-grow sm:flex-grow-0"
+                  >
+                    Official Portal
+                  </a>
+                  <Button
+                    onClick={() => handleTenderBidSubmit(activeTenderDetail.id)}
+                    disabled={activeTenderDetail.status !== 'Open' || submittedBids[activeTenderDetail.id]}
+                    className={`px-6 py-2.5 text-xs font-bold rounded-lg flex-grow sm:flex-grow-0 ${
+                      submittedBids[activeTenderDetail.id]
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
+                        : activeTenderDetail.status === 'Open'
+                        ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-500/10'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    }`}
+                  >
+                    {submittedBids[activeTenderDetail.id] ? '✓ Bid Submitted' : activeTenderDetail.status === 'Open' ? 'Place Bid' : 'Closed'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Related opportunities */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-black text-slate-900">Related Bidding Tenders</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {relatedTenders.map((rt) => (
+                  <Card key={rt.id} className="p-4 border-slate-200/80 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                      <span className="bg-slate-100 text-slate-600 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                        {rt.industry} Industry
+                      </span>
+                      <h4 className="font-bold text-slate-900 text-sm mt-2 line-clamp-1">{rt.title}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{rt.authority}</p>
+                    </div>
+                    <Button
+                      onClick={() => { setActiveTenderDetail(rt); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      className="mt-4 text-[10px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 w-full py-1.5"
+                    >
+                      View Details
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
         {/* VIEW: GOVERNMENT FUNDING */}
-        {currentView === 'funding' && (
+        {currentView === 'funding' && !activeFundingDetail && (
           <div className="space-y-8 animate-fadeIn">
             {/* Header */}
             <div className="border-b border-slate-200 pb-5">
@@ -1122,7 +1286,7 @@ export function WebApp() {
                 />
               </div>
 
-              {/* Class Sector classification filter */}
+              {/* Class Sector filter */}
               <div>
                 <select
                   value={selectedFundingSector}
@@ -1184,8 +1348,6 @@ export function WebApp() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {paginatedFunding.map((fund) => {
-                    const isApplied = appliedGrants[fund.id];
-
                     return (
                       <Card key={fund.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80">
                         <div className="space-y-4">
@@ -1212,20 +1374,10 @@ export function WebApp() {
                             <span className="text-sm font-black text-emerald-600">{fund.amount}</span>
                             <div className="flex space-x-1.5">
                               <Button
-                                onClick={() => setActiveFundingDetail(fund)}
+                                onClick={() => { setActiveFundingDetail(fund); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                                 className="px-2.5 py-1.5 text-[10px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
                               >
-                                Benefits
-                              </Button>
-                              <Button
-                                onClick={() => handleGrantApplySubmit(fund.id)}
-                                className={`px-3 py-1.5 text-[10px] font-bold rounded ${
-                                  isApplied
-                                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
-                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                                }`}
-                              >
-                                {isApplied ? '✓ Enrolled' : 'Apply Scheme'}
+                                Explore Details
                               </Button>
                             </div>
                           </div>
@@ -1257,67 +1409,147 @@ export function WebApp() {
                 </Button>
               </div>
             )}
+          </div>
+        )}
 
-            {/* Funding Scheme Benefits Modal */}
-            {activeFundingDetail && (
-              <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-                <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-scaleUp space-y-5">
-                  <div className="flex justify-between items-start border-b border-slate-100 pb-4">
-                    <div>
-                      <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded">
-                        {activeFundingDetail.sector} Class Scheme
-                      </span>
-                      <h3 className="text-xl font-bold text-slate-900 mt-2">{activeFundingDetail.title}</h3>
-                      <p className="text-xs font-bold text-slate-500 mt-1">{activeFundingDetail.ministry}</p>
-                    </div>
-                    <button
-                      onClick={() => setActiveFundingDetail(null)}
-                      className="text-slate-400 hover:text-slate-600 font-mono text-xl p-1"
-                    >
-                      ✕
-                    </button>
-                  </div>
+        {/* VIEW: GOVERNMENT FUNDING DETAIL PAGE */}
+        {currentView === 'funding' && activeFundingDetail && (
+          <div className="space-y-8 animate-fadeIn max-w-4xl mx-auto">
+            {/* Header actions */}
+            <div className="flex justify-between items-center">
+              <Button
+                onClick={() => setActiveFundingDetail(null)}
+                className="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg"
+              >
+                &larr; Back to Listings
+              </Button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleToggleBookmark(activeFundingDetail.id)}
+                  className={`px-3 py-2 rounded-lg border text-xs font-bold transition-colors ${
+                    bookmarkedItems[activeFundingDetail.id]
+                      ? 'bg-amber-500 border-amber-600 text-white'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {bookmarkedItems[activeFundingDetail.id] ? '★ Bookmarked' : '☆ Bookmark'}
+                </button>
+                <button
+                  onClick={() => handleShareClick(activeFundingDetail.title)}
+                  className="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg"
+                >
+                  Share
+                </button>
+              </div>
+            </div>
 
-                  <div className="space-y-4 text-sm text-slate-600">
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-slate-900">Program Objective:</h4>
-                      <p className="leading-relaxed text-xs">{activeFundingDetail.description}</p>
-                    </div>
-
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-slate-900 text-xs">Direct Advantages & Benefits:</h4>
-                      <ul className="list-disc list-inside space-y-1 text-xs">
-                        {activeFundingDetail.benefits.map((benefit, index) => (
-                          <li key={index}>{benefit}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="bg-slate-50 p-3 rounded-xl text-xs space-y-1">
-                      <span className="text-slate-400 font-medium">Scheme Capital Limit</span>
-                      <p className="font-black text-emerald-600 text-sm">{activeFundingDetail.amount}</p>
-                      <span className="text-slate-400 font-medium block pt-1">Eligibility Criteria</span>
-                      <p className="text-slate-700 leading-relaxed font-medium">{activeFundingDetail.eligibility}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                    <Button
-                      onClick={() => setActiveFundingDetail(null)}
-                      className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200"
-                    >
-                      Close Details
-                    </Button>
-                    <Button
-                      onClick={() => { handleGrantApplySubmit(activeFundingDetail.id); setActiveFundingDetail(null); }}
-                      className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded"
-                    >
-                      {appliedGrants[activeFundingDetail.id] ? '✓ Enrolled' : 'Apply Scheme'}
-                    </Button>
-                  </div>
+            {/* Core Details Panel */}
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="flex justify-between items-start flex-wrap gap-4 border-b border-slate-100 pb-5">
+                <div className="space-y-2">
+                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded">
+                    {activeFundingDetail.sector} Class Scheme
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{activeFundingDetail.title}</h1>
+                  <p className="text-sm font-semibold text-slate-600">Ministry: {activeFundingDetail.ministry}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-slate-400 block font-medium">Scheme Funding Capital</span>
+                  <span className="text-xl font-black text-emerald-600">{activeFundingDetail.amount}</span>
                 </div>
               </div>
-            )}
+
+              {/* Informational parameters */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl text-xs">
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Department</span>
+                  <span className="font-bold text-slate-800">{activeFundingDetail.department}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Jurisdiction</span>
+                  <span className="font-bold text-slate-800">{activeFundingDetail.state} ({activeFundingDetail.country})</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Enrollment Status</span>
+                  <span className="font-black text-emerald-600">{activeFundingDetail.status}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px] mb-0.5">Application Deadline</span>
+                  <span className="font-black text-red-600">{activeFundingDetail.deadline}</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Program Objective</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{activeFundingDetail.description}</p>
+              </div>
+
+              {/* Eligibility */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Target Eligibility Criteria</h3>
+                <p className="text-slate-600 text-sm leading-relaxed bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">{activeFundingDetail.eligibility}</p>
+              </div>
+
+              {/* Scheme benefits list */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-slate-900 text-sm border-l-4 border-emerald-600 pl-2">Direct Advantages & Benefits</h3>
+                <ul className="list-disc list-inside space-y-1.5 text-slate-600 text-sm">
+                  {activeFundingDetail.benefits.map((benefit, index) => (
+                    <li key={index}>{benefit}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Actions & Dates */}
+              <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <span className="text-xs text-slate-400 font-medium">Published Date: {activeFundingDetail.publishedDate}</span>
+                <div className="flex space-x-3 w-full sm:w-auto">
+                  <a
+                    href={activeFundingDetail.officialWebsite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-lg text-center flex-grow sm:flex-grow-0"
+                  >
+                    Official Portal
+                  </a>
+                  <Button
+                    onClick={() => handleGrantApplySubmit(activeFundingDetail.id)}
+                    className={`px-6 py-2.5 text-xs font-bold rounded-lg flex-grow sm:flex-grow-0 ${
+                      appliedGrants[activeFundingDetail.id]
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-default'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
+                  >
+                    {appliedGrants[activeFundingDetail.id] ? '✓ Enrolled' : 'Apply Scheme'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Related opportunities */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-black text-slate-900">Related Schemes</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {relatedFunding.map((rf) => (
+                  <Card key={rf.id} className="p-4 border-slate-200/80 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                      <span className="bg-slate-100 text-slate-600 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                        {rf.sector} Class
+                      </span>
+                      <h4 className="font-bold text-slate-900 text-sm mt-2 line-clamp-1">{rf.title}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{rf.ministry}</p>
+                    </div>
+                    <Button
+                      onClick={() => { setActiveFundingDetail(rf); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      className="mt-4 text-[10px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 w-full py-1.5"
+                    >
+                      View Details
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -1484,9 +1716,9 @@ export function WebApp() {
             <div>
               <h4 className="text-white text-sm font-bold mb-4 uppercase tracking-wider">Quick Actions</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => { setCurrentView('jobs'); setJobSearch(''); setSelectedJobCategory('All'); setSelectedJobState('All States'); setSelectedJobCountry('All Countries'); setSelectedJobStatus('All'); setJobSort('none'); setJobsPage(1); }} className="hover:text-white transition-colors">Search Jobs</button></li>
-                <li><button onClick={() => { setCurrentView('tenders'); setTenderSearch(''); setSelectedTenderIndustry('All'); setSelectedTenderState('All States'); setSelectedTenderCountry('All Countries'); setSelectedTenderStatus('All'); setTenderSort('none'); setTendersPage(1); }} className="hover:text-white transition-colors">Review Bids</button></li>
-                <li><button onClick={() => { setCurrentView('funding'); setFundingSearch(''); setSelectedFundingSector('All'); setSelectedFundingState('All States'); setSelectedFundingCountry('All Countries'); setSelectedFundingStatus('All'); setFundingSort('none'); setFundingPage(1); }} className="hover:text-white transition-colors">Apply for Funding</button></li>
+                <li><button onClick={() => { setCurrentView('jobs'); setJobSearch(''); setSelectedJobCategory('All'); setSelectedJobState('All States'); setSelectedJobCountry('All Countries'); setSelectedJobStatus('All'); setJobSort('none'); setJobsPage(1); setActiveJobDetail(null); }} className="hover:text-white transition-colors">Search Jobs</button></li>
+                <li><button onClick={() => { setCurrentView('tenders'); setTenderSearch(''); setSelectedTenderIndustry('All'); setSelectedTenderState('All States'); setSelectedTenderCountry('All Countries'); setSelectedTenderStatus('All'); setTenderSort('none'); setTendersPage(1); setActiveTenderDetail(null); }} className="hover:text-white transition-colors">Review Bids</button></li>
+                <li><button onClick={() => { setCurrentView('funding'); setFundingSearch(''); setSelectedFundingSector('All'); setSelectedFundingState('All States'); setSelectedFundingCountry('All Countries'); setSelectedFundingStatus('All'); setFundingSort('none'); setFundingPage(1); setActiveFundingDetail(null); }} className="hover:text-white transition-colors">Apply for Funding</button></li>
                 <li><button onClick={() => setCurrentView('contact')} className="hover:text-white transition-colors">Contact Center</button></li>
               </ul>
             </div>

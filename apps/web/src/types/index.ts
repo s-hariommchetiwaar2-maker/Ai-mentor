@@ -18,6 +18,8 @@ export interface JobListing {
   publishedDate: string;
   description: string;
   requirements: string[];
+  eligibility: string; // Eligibility criteria text
+  officialWebsite: string; // URL link
 }
 
 export interface TenderListing {
@@ -37,6 +39,8 @@ export interface TenderListing {
   industry: 'Construction' | 'IT' | 'Energy' | 'Healthcare' | 'Education' | 'Railways' | 'Defence' | 'Telecom' | 'Smart Cities' | 'Agriculture';
   status: 'Open' | 'Under Evaluation' | 'Awarded' | 'Closed';
   description: string;
+  eligibility: string; // Minimum bidder qualification
+  officialWebsite: string; // Tender portal URL
 }
 
 export interface FundingScheme {
@@ -55,6 +59,7 @@ export interface FundingScheme {
   publishedDate: string;
   description: string;
   benefits: string[];
+  officialWebsite: string; // Scheme details portal URL
 }
 
 export interface ContactInquiry {

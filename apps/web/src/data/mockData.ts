@@ -19,6 +19,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-01',
     description: 'Lead the design and migration of public service applications to secure gov-cloud environments.',
     requirements: ['10+ years experience in software engineering', 'Expertise in Kubernetes and secure cloud VPC architecture', 'Prior work with large-scale governmental or enterprise databases'],
+    eligibility: 'Bachelor’s or Master’s in Computer Science / IT. Minimum 10 years of total software experience with at least 3 years as a lead cloud or systems architect.',
+    officialWebsite: 'https://nic.gov.in/careers',
   },
   {
     id: 'job-2',
@@ -38,6 +40,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-05',
     description: 'Conduct comprehensive ecological impact assessments and gather statistical data for forest conservation policies.',
     requirements: ['Master’s degree in Environmental Science or related discipline', 'Experience conducting field research and writing analytical briefs', 'Proficiency in GIS mapping tools'],
+    eligibility: 'Master’s degree in Forestry, Botany, Ecology or Environmental Sciences with aggregate first class. Upper age limit is 32 years.',
+    officialWebsite: 'https://moef.gov.in/jobs',
   },
   {
     id: 'job-3',
@@ -57,6 +61,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-02',
     description: 'Supervise critical underground tunnel boring works and ensure track alignment calibration standards are upheld.',
     requirements: ['Bachelor’s in Civil or Mechanical Engineering', '5+ years track safety and structural construction monitoring', 'Familiarity with state heavy transport protocols'],
+    eligibility: 'Degree in Civil Engineering from a recognized institute. Minimum 5 years experience in railway construction or heavy track maintenance.',
+    officialWebsite: 'https://kolkatametrorail.gov.in/recruitment',
   },
   {
     id: 'job-4',
@@ -76,6 +82,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-08',
     description: 'Perform macro-economic liquidity evaluations, monitor systemic compliance, and author institutional asset vulnerability reports.',
     requirements: ['Master’s in Finance, Economics, or Quantitative risk assessment', 'Chartered Financial Analyst (CFA) or equivalent credentials', 'Expertise in Basel III compliance frameworks'],
+    eligibility: 'Post-graduate degree in Finance or quantitative analysis. Professional certification in risk management (FRM / PRM) is highly desirable.',
+    officialWebsite: 'https://rbi.org.in/opportunities',
   },
   {
     id: 'job-5',
@@ -95,6 +103,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-04',
     description: 'Architect reliable wireless transceiver links and encrypted software-defined radio configurations for defense applications.',
     requirements: ['Degree in Electronics, Communications, or Aeronautical Tech', 'Active cryptographic routing clearance eligibility', 'Sound knowledge of high-frequency radar algorithms'],
+    eligibility: 'B.E./B.Tech in Electronics & Communication or Telecommunications. Candidate must pass the defense service physical efficiency clearance metrics.',
+    officialWebsite: 'https://drdo.gov.in/careers',
   },
   {
     id: 'job-6',
@@ -114,6 +124,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-12',
     description: 'Analyze file signatures, reverse-engineer phishing payloads, and support complex multi-jurisdictional ransomware tracking cases.',
     requirements: ['Certified Ethical Hacker (CEH) or CHFI certifications', '3+ years working in malware analysis or active law enforcement forensics', 'Skillful in memory dump parsing tools'],
+    eligibility: 'Bachelor’s degree in Computer Science, Cyber Security, or Information Security with 3+ years in digital forensic analysis.',
+    officialWebsite: 'https://ksp.gov.in/cyber-cell',
   },
   {
     id: 'job-7',
@@ -133,6 +145,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-06',
     description: 'Instruct graduate seminars, secure energy research grants, and mentor undergraduate labs focused on solar grid hardware.',
     requirements: ['PhD in Energy Engineering or related fields', 'Strong research publication track-record in indexed journals', 'Passion for student development and active classroom learning models'],
+    eligibility: 'Ph.D. in Energy Engineering, Electrical, or Mechanical with high specialization in Renewable Integration. GATE qualified.',
+    officialWebsite: 'https://mnit.ac.in/recruitment',
   },
   {
     id: 'job-8',
@@ -152,6 +166,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-10',
     description: 'Manage deep mining operations, lead safety protocols, and optimize resource logistics with modern heavy machinery panels.',
     requirements: ['Degree in Mining Engineering or geological sciences', 'Mine Manager First-Class competency certification', '7+ years managing state extractive mining operations'],
+    eligibility: 'Mining Engineering degree with Mine Manager certificate of competency. Minimum 7 years experience in deep excavation surface operations.',
+    officialWebsite: 'https://coalindia.in/careers',
   },
   {
     id: 'job-9',
@@ -171,6 +187,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-03',
     description: 'Preside over municipal tribunals, evaluate evidentiary filings, and draft authoritative legal rulings in civil disputes.',
     requirements: ['LLB degree from an accredited law school', 'Active enrollment in the State Bar Association', '7+ years active court practice or judicial magistracy service'],
+    eligibility: 'Graduate in Law (LLB) with 7 years enrollment as an Advocate or having judicial magistrate panel ranks.',
+    officialWebsite: 'https://allahabadhighcourt.in/recruitment',
   },
   {
     id: 'job-10',
@@ -190,6 +208,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-15',
     description: 'Oversee biological contagion spreadsheets, formulate containment guidelines, and brief state healthcare ministers.',
     requirements: ['MD or PhD in Public Health/Epidemiology', 'High proficiency with statistical modeling frameworks (R/SASS)', 'Proven leadership directing public emergency teams'],
+    eligibility: 'Doctor of Medicine (MD) in Public Health / Community Medicine or PhD in Epidemiology with 5+ years of disease analysis tracking experience.',
+    officialWebsite: 'https://mohfw.gov.in/opportunities',
   },
   {
     id: 'job-11',
@@ -209,6 +229,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-14',
     description: 'Audit safety factor variables for long-span steel truss bridges and perform structural tension load tests.',
     requirements: ['Master’s in Structural Engineering', 'Proficiency with SAP2000, AutoCAD, and heavy site stress gear', 'Experience working under high-grade seismic hazard guidelines'],
+    eligibility: 'M.Tech in Structural Engineering with first class. At least 6 years inspecting large scale highway and bridge structures.',
+    officialWebsite: 'https://nhidcl.com/careers',
   },
   {
     id: 'job-12',
@@ -228,6 +250,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-02',
     description: 'Undergo thorough practical rotation in signal cabling, telecom diagnostics, and heavy station transformer maintenance.',
     requirements: ['Diploma or ITI certification in Electrical / Signal Mechanics', 'Strict compliance with workshop safety regulations', 'Eagerness to transition into full railway signal roles'],
+    eligibility: 'Passed 10th class under 10+2 system with Science & Maths, plus ITI certificate in Electrician / Signal Fitter trade.',
+    officialWebsite: 'https://sr.indianrailways.gov.in',
   },
   {
     id: 'job-13',
@@ -247,6 +271,8 @@ export const MOCK_JOBS: JobListing[] = [
     publishedDate: '2026-07-10',
     description: 'Direct local clinical staff, perform primary diagnostic screening, and ensure compliance with healthcare protocols.',
     requirements: ['Registered Nurse (RN) degree or higher', '3+ years working in clinic supervision or acute care nursing', 'Excellent coordination skills'],
+    eligibility: 'BSN degree or Associate degree in nursing with active Texas state RN license board registration.',
+    officialWebsite: 'https://dshs.texas.gov/careers',
   },
 ];
 
@@ -268,6 +294,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'Smart Cities',
     status: 'Open',
     description: 'Procurement of services, trenching, and laying of over 450km of fiber optic networks to link city public schools, municipal offices, and CCTV centers.',
+    eligibility: 'Class-A certified telecom / fiber optic laying agencies. Average annual turn-over of at least $500,000 in the past 3 fiscal years.',
+    officialWebsite: 'https://mahatenders.gov.in',
   },
   {
     id: 'tender-2',
@@ -286,6 +314,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'Agriculture',
     status: 'Open',
     description: 'Bulk supply, commissioning, and installation of highly efficient DC solar powered water pumps for irrigation under rural green initiative schemes.',
+    eligibility: 'Registered OEM or authorized system integrators of solar DC pumps. Must have successfully commissioned at least 1,000 pumps in national grid environments.',
+    officialWebsite: 'https://rreda.gov.in/tenders',
   },
   {
     id: 'tender-3',
@@ -304,6 +334,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'Construction',
     status: 'Open',
     description: 'Civil construction, plumbing, fire suppression networks, electrical substation construction, and core structural works for a state-of-the-art five-story critical care wing.',
+    eligibility: 'Class-I Civil Contractors with experience building multi-story medical or laboratory campuses. Solvency certificate of at least $10,000,000 required.',
+    officialWebsite: 'https://assamtenders.gov.in',
   },
   {
     id: 'tender-4',
@@ -322,6 +354,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'IT',
     status: 'Under Evaluation',
     description: 'Design, development, and system integration of deep-learning algorithms onto urban transit fleet management consoles to optimize dynamically changing route delays.',
+    eligibility: 'System developers / IT firms specializing in public logistics, machine learning algorithms or intelligent transport routing systems.',
+    officialWebsite: 'https://eprocurement.telangana.gov.in',
   },
   {
     id: 'tender-5',
@@ -340,6 +374,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'Energy',
     status: 'Open',
     description: 'EPC contracting for setting up a 5MW decentralized hybrid solar/wind power generation plant with localized smart telemetry controls.',
+    eligibility: 'Power infrastructure developers with completed solar or wind hybrid EPC contracts totaling at least 15MW aggregate capacity.',
+    officialWebsite: 'https://eproc.rajasthan.gov.in',
   },
   {
     id: 'tender-6',
@@ -358,6 +394,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'Healthcare',
     status: 'Open',
     description: 'Custom development of secure cloud-connected patient registry systems, incorporating modern FHIR standards and secure API channels.',
+    eligibility: 'CMMI Level 5 software design organizations with demonstrated implementation of large scale electronic health registries or federal portals.',
+    officialWebsite: 'https://tntenders.gov.in',
   },
   {
     id: 'tender-7',
@@ -376,6 +414,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'Education',
     status: 'Open',
     description: 'Supply, installation, and multi-year maintenance support of 4,000 smart interactive touch screens and companion centralized Learning Management software.',
+    eligibility: 'Authorized distributors of interactive panels and educational software. Must have completed similar school digitalization supply contracts.',
+    officialWebsite: 'https://mptenders.gov.in',
   },
   {
     id: 'tender-8',
@@ -394,6 +434,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'Railways',
     status: 'Open',
     description: 'Bulk casting and machine turning of precision steel crankcases and piston cylinder block liners adhering to RDSO train engineering specifications.',
+    eligibility: 'RDSO-approved steel foundries with class-A infrastructure certifications for rail locomotive block casting manufacture.',
+    officialWebsite: 'https://ireps.gov.in',
   },
   {
     id: 'tender-9',
@@ -412,6 +454,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'Defence',
     status: 'Open',
     description: 'Supply, deployment, and integration of S-band solid-state active coastal surveillance radar hubs with encrypted satellite datalinks.',
+    eligibility: 'Defense electronic manufacturing license holders with valid tier-1 secure electronic routing credentials.',
+    officialWebsite: 'https://defproc.gov.in',
   },
   {
     id: 'tender-10',
@@ -430,6 +474,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'Telecom',
     status: 'Open',
     description: 'Installation of high-capacity DWDM optical transport routers to scale state-wide network backbone speeds to 100Gbps interfaces.',
+    eligibility: 'Licensed telecom infrastructure providers with optical transmission network rollout experience spanning at least 2,000 km.',
+    officialWebsite: 'https://etender.up.nic.in',
   },
   {
     id: 'tender-11',
@@ -448,6 +494,8 @@ export const MOCK_TENDERS: TenderListing[] = [
     industry: 'Construction',
     status: 'Open',
     description: 'Upgrade of airport surface runway edge safety lighting and automated telemetry control consoles.',
+    eligibility: 'FAA-certified electrical contractors with active experience deploying airport lighting arrays (L-861/L-862).',
+    officialWebsite: 'https://austintexas.gov/financeonline/vendor_connection',
   },
 ];
 
@@ -468,6 +516,7 @@ export const MOCK_FUNDING: FundingScheme[] = [
     publishedDate: '2026-07-01',
     description: 'Fostering homegrown cutting-edge technological advancements through direct capital grants without equity dilution to commercialize next-gen hardware/software.',
     benefits: ['100% non-dilutive startup funding', 'Mentorship and acceleration programs with premier research institutes', 'Direct access to government procurement sandbox environments'],
+    officialWebsite: 'https://startupindia.gov.in/deep-tech-scheme',
   },
   {
     id: 'fund-2',
@@ -485,6 +534,7 @@ export const MOCK_FUNDING: FundingScheme[] = [
     publishedDate: '2026-07-04',
     description: 'Assisting smallholders in transition to organic practices, micro-irrigation systems, and soil regenerative agriculture methods.',
     benefits: ['Subsidies on organic input and soil testing equipment', 'Interest-free loans on buying water-efficient machinery', 'Free multi-day training at state agricultural hubs'],
+    officialWebsite: 'https://agricoop.nic.in/organic-farming-grants',
   },
   {
     id: 'fund-3',
@@ -502,6 +552,7 @@ export const MOCK_FUNDING: FundingScheme[] = [
     publishedDate: '2026-07-15',
     description: 'Funding research, research labs, rapid prototyping, and pilot trials for technological breakthroughs in greenhouse gas reduction and plastic alternatives.',
     benefits: ['Phased commercialization milestone grants', 'Assistance in local and international patent filing', 'Validation testing facilities in partnership with state laboratories'],
+    officialWebsite: 'https://mnre.gov.in/green-innovation-support',
   },
   {
     id: 'fund-4',
@@ -519,6 +570,7 @@ export const MOCK_FUNDING: FundingScheme[] = [
     publishedDate: '2026-07-11',
     description: 'Collateral-free credit support to actively encourage young entrepreneurs in developing self-sustainable engineering workshops and assembly centers.',
     benefits: ['100% collateral-free commercial loans', 'Subsidized loan interest rates for rural and women-owned units', 'Extended repayment holidays up to 18 months'],
+    officialWebsite: 'https://cgtmse.in/scheme-details',
   },
   {
     id: 'fund-5',
@@ -536,6 +588,7 @@ export const MOCK_FUNDING: FundingScheme[] = [
     publishedDate: '2026-07-06',
     description: 'Targeted incubator support, direct asset subsidies, and low-interest capital loans designed to assist women-led manufacturing and handicrafts workshops.',
     benefits: ['Interest subsidy of up to 4% per annum', 'Zero application processing fee checks', 'Exclusive participation slots in international trade fairs'],
+    officialWebsite: 'https://mahilaudyam.maharashtra.gov.in',
   },
   {
     id: 'fund-6',
@@ -553,6 +606,7 @@ export const MOCK_FUNDING: FundingScheme[] = [
     publishedDate: '2026-07-02',
     description: 'Direct stipend payouts to support advanced scientific experimentation, textbook access, and doctoral mentorship under leading laboratories.',
     benefits: ['Monthly stipendiary allowances paid directly to student accounts', 'Contingency grants for purchase of textbooks and lab consumables', 'Sponsored international conference travel allowances'],
+    officialWebsite: 'https://csirhrdg.res.in/fellowships',
   },
   {
     id: 'fund-7',
@@ -570,6 +624,7 @@ export const MOCK_FUNDING: FundingScheme[] = [
     publishedDate: '2026-07-28',
     description: 'Facilitating experimental prototyping of superconducting materials, smart alloys, and nanoscale carbon composite panels.',
     benefits: ['Milestone-based multi-year direct funding allocations', 'Procurement import custom duty waivers', 'Priority validation channels in state testing laboratories'],
+    officialWebsite: 'https://dst.gov.in/advanced-materials-grants',
   },
   {
     id: 'fund-8',
@@ -587,6 +642,7 @@ export const MOCK_FUNDING: FundingScheme[] = [
     publishedDate: '2026-07-03',
     description: 'Exempts import customs duties on capital goods machinery to incentivize structural quality scaling for local manufacturing.',
     benefits: ['Zero-duty import of high-tech production machinery', 'Tax-free import options on testing equipment and spares', 'Simplified foreign transaction validation pipelines'],
+    officialWebsite: 'https://dgft.gov.in/epcg-subsidies',
   },
   {
     id: 'fund-9',
@@ -604,6 +660,7 @@ export const MOCK_FUNDING: FundingScheme[] = [
     publishedDate: '2026-07-15',
     description: 'Direct financial incentives of 4% to 6% on incremental sales to scale local assembly lines for high-end microelectronics and semiconductors.',
     benefits: ['Direct cash incentive payouts based on production milestones', 'Fast-track environmental and safety approval processing', 'State infrastructure lease priority support'],
+    officialWebsite: 'https://meity.gov.in/pli-electronics-scheme',
   },
   {
     id: 'fund-10',
@@ -621,6 +678,7 @@ export const MOCK_FUNDING: FundingScheme[] = [
     publishedDate: '2026-07-12',
     description: 'Provides non-dilutive phase 1 pilot seed capital to fast track product commercialization of smart sensor tech.',
     benefits: ['100% equity-free research funds', 'Mentorship and acceleration links with national labs', 'Priority transition options for direct federal procurement contracts'],
+    officialWebsite: 'https://sbir.gov/scheme-details',
   },
 ];
 
