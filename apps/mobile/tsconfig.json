@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.settings.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "noUnusedLocals": false,
+    "paths": {
+      "@/*": ["src/*"],
+      "@ai-mentor/core": ["../../packages/core/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}
