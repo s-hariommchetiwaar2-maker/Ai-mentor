@@ -13,6 +13,8 @@ export interface User {
   verificationToken?: string;
   resetToken?: string;
   resetTokenExp?: number;
+  userPlan?: 'free' | 'premium'; // Dynamic active plan tracking
+  subscriptionExpiresAt?: string; // Plan validity expiration timestamp
 }
 
 export interface Profile {
