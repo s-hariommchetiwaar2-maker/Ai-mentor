@@ -1,4 +1,4 @@
-import { JobListing, TenderListing, FundingScheme } from '../types/index.js';
+import { JobListing, TenderListing, FundingScheme, SubscriptionPlan } from '../types/index.js';
 
 export const MOCK_JOBS: JobListing[] = [
   {
@@ -1012,4 +1012,82 @@ export const COUNTRIES_LIST = [
   'All Countries',
   'India',
   'United States'
+];
+
+export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
+  {
+    id: 'free',
+    name: 'Free Plan',
+    price: '₹0',
+    priceNumeric: 0,
+    validity: '1 Month',
+    validityMonths: 1,
+    description: 'Basic citizen access containing overview of active vacancies, tenders, and grants.',
+    features: [
+      'Validity: 1 Month',
+      'Show basic title, department & dates',
+      'Real-time alert notifications for all modules',
+      'Lock full descriptions and official website links'
+    ]
+  },
+  {
+    id: 'premium-299',
+    name: 'Career Plan',
+    price: '₹299',
+    priceNumeric: 299,
+    validity: '3 Months',
+    validityMonths: 3,
+    description: 'Ideal for job seekers looking for fully unlocked public sector vacancies.',
+    features: [
+      'Validity: 3 Months',
+      'Completely unlock all Government Jobs details',
+      'Unlock official website links & apply buttons',
+      'Real-time career alert notifications'
+    ]
+  },
+  {
+    id: 'premium-999',
+    name: 'Jobs & Funding Plan',
+    price: '₹999',
+    priceNumeric: 999,
+    validity: '6 Months',
+    validityMonths: 6,
+    description: 'For candidates and startups seeking career opportunities and organic/DPIIT grants.',
+    features: [
+      'Validity: 6 Months',
+      'Completely unlock all Jobs and Funding details',
+      'Unlock official links and submission forms',
+      'Priority startup mentoring resources'
+    ]
+  },
+  {
+    id: 'premium-3999',
+    name: 'Enterprise Pro Plan',
+    price: '₹3,999',
+    priceNumeric: 3999,
+    validity: '12 Months',
+    validityMonths: 12,
+    description: 'All-access pass for heavy contractors and bidders across all 3 channels.',
+    features: [
+      'Validity: 12 Months',
+      '100% UNLOCKED access to Jobs, Tenders & Funding details',
+      'Full bid checklists and L1 selection guidelines',
+      'Multi-jurisdiction state filters'
+    ]
+  },
+  {
+    id: 'premium-6999',
+    name: 'Lifetime Access Plan',
+    price: '₹6,999',
+    priceNumeric: 6999,
+    validity: 'Lifetime',
+    validityMonths: 999,
+    description: 'Ultimate tier for elite developers, corporations, and institutional bidders.',
+    features: [
+      'Validity: Lifetime (No renewals required)',
+      '100% UNLOCKED access across all modules forever',
+      'Dedicated priority email support desk',
+      'Early access to upcoming private bid pre-drafts'
+    ]
+  }
 ];

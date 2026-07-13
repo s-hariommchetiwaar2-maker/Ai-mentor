@@ -5,6 +5,7 @@ import { Button, Card } from '@ai-mentor/shared-ui';
 import {
   PageView,
   UserPlan,
+  SubscriptionPlan,
   JobListing,
   TenderListing,
   FundingScheme,
@@ -17,7 +18,8 @@ import {
   COUNTRIES_LIST,
   MOCK_JOBS as INITIAL_JOBS,
   MOCK_TENDERS as INITIAL_TENDERS,
-  MOCK_FUNDING as INITIAL_FUNDING
+  MOCK_FUNDING as INITIAL_FUNDING,
+  SUBSCRIPTION_PLANS
 } from './data/mockData.js';
 
 // Import Service Layer API connectors
@@ -187,6 +189,26 @@ export function WebApp() {
   // Subscription and notification states
   const [userPlan, setUserPlan] = useState<UserPlan>('free');
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+
+  // Helper checks for category-scoped plan unlocks based on active subscription tier
+  const isJobsUnlocked = () => {
+    return userPlan === 'premium-299' || userPlan === 'premium-999' || userPlan === 'premium-3999' || userPlan === 'premium-6999';
+  };
+
+  const isFundingUnlocked = () => {
+    return userPlan === 'premium-999' || userPlan === 'premium-3999' || userPlan === 'premium-6999';
+  };
+
+  const isTendersUnlocked = () => {
+    return userPlan === 'premium-3999' || userPlan === 'premium-6999';
+  };
+
+  // Interactive pricing modal and simulated checkout states
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [selectedPlanToUpgrade, setSelectedPlanToUpgrade] = useState<SubscriptionPlan | null>(null);
+  const [isCheckoutProcessing, setIsCheckoutProcessing] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState<'plan_select' | 'payment_process' | 'payment_success'>('plan_select');
+  const [paymentTxId, setPaymentTxId] = useState('');
   const [notifications, setNotifications] = useState([
     {
       id: 'notif-1',
@@ -464,6 +486,24 @@ export function WebApp() {
     }, 3000);
   };
 
+  const handlePlanSelection = (plan: SubscriptionPlan) => {
+    setSelectedPlanToUpgrade(plan);
+    setCheckoutStep('payment_process');
+    setIsCheckoutProcessing(true);
+    setPaymentTxId('');
+
+    // Simulate Razorpay Secure Order creation & Payment Processing gateway
+    setTimeout(() => {
+      setIsCheckoutProcessing(false);
+      const simulatedTxId = 'pay_' + Math.random().toString(36).substring(2, 12);
+      setPaymentTxId(simulatedTxId);
+      setCheckoutStep('payment_success');
+
+      // Actually update the state dynamically to the purchased plan!
+      setUserPlan(plan.id);
+    }, 2000); // 2 seconds processing loading state
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans animate-fadeIn">
       {/* Global Share Toast Notification Alert */}
@@ -618,27 +658,24 @@ export function WebApp() {
               {/* Plan Toggle Button */}
               <div className="flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
                 <span className="text-[10px] uppercase font-black text-slate-400">Plan:</span>
-                {userPlan === 'free' ? (
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-slate-200">🎫 Free (1M)</span>
-                    <button
-                      onClick={() => setUserPlan('premium')}
-                      className="bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-extrabold px-2.5 py-1 rounded transition-colors"
-                    >
-                      Upgrade
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-amber-400">👑 Premium</span>
-                    <button
-                      onClick={() => setUserPlan('free')}
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] font-bold px-2 py-1 rounded transition-colors"
-                    >
-                      Downgrade
-                    </button>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-bold text-slate-200">
+                    {userPlan === 'free' && '🎫 Free (1M)'}
+                    {userPlan === 'premium-299' && '💼 Career'}
+                    {userPlan === 'premium-999' && '🌱 Jobs & Funding'}
+                    {userPlan === 'premium-3999' && '🏢 Enterprise Pro'}
+                    {userPlan === 'premium-6999' && '👑 Lifetime'}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setCheckoutStep('plan_select');
+                      setIsPricingModalOpen(true);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-extrabold px-2.5 py-1 rounded transition-colors"
+                  >
+                    Manage
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -703,21 +740,20 @@ export function WebApp() {
             <div className="border-t border-slate-800 pt-3 mt-3 space-y-3">
               <div className="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
                 <span className="text-xs font-bold text-slate-400">Active Subscription:</span>
-                {userPlan === 'free' ? (
-                  <button
-                    onClick={() => { setUserPlan('premium'); setIsMobileMenuOpen(false); }}
-                    className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg"
-                  >
-                    🎫 Upgrade Free (1M)
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => { setUserPlan('free'); setIsMobileMenuOpen(false); }}
-                    className="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg"
-                  >
-                    👑 Downgrade Premium
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    setCheckoutStep('plan_select');
+                    setIsPricingModalOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg"
+                >
+                  {userPlan === 'free' && '🎫 Manage Free (1M)'}
+                  {userPlan === 'premium-299' && '💼 Manage Career'}
+                  {userPlan === 'premium-999' && '🌱 Manage Jobs & Funding'}
+                  {userPlan === 'premium-3999' && '🏢 Manage Enterprise Pro'}
+                  {userPlan === 'premium-6999' && '👑 Manage Lifetime'}
+                </button>
               </div>
 
               {/* Mobile Notification Alert items */}
@@ -998,7 +1034,7 @@ export function WebApp() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {paginatedJobs.map((job) => (
                     <Card key={job.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80 relative overflow-hidden bg-white p-0">
-                      {userPlan === 'free' && (
+                      {!isJobsUnlocked() && (
                         <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm z-10">
                           <span>🔒</span>
                           <span>Locked</span>
@@ -1024,10 +1060,10 @@ export function WebApp() {
                           <p className="text-sm font-semibold text-slate-600 mt-0.5">{job.agency}</p>
                           <p className="text-xs font-medium text-slate-400 mt-1">{job.department} ({job.ministry})</p>
                         </div>
-                        {userPlan === 'free' ? (
+                        {!isJobsUnlocked() ? (
                           <div className="p-3 bg-slate-50 border border-slate-150 rounded-xl flex items-center space-x-2 text-xs text-slate-500">
                             <span>🔒</span>
-                            <span>Detailed description locked on Free Plan.</span>
+                            <span>Detailed description locked. Requires Career Plan or higher.</span>
                           </div>
                         ) : (
                           <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{job.description}</p>
@@ -1037,17 +1073,17 @@ export function WebApp() {
                       <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between mx-5 mb-5">
                         <div>
                           <span className="text-[10px] text-slate-400 block font-medium uppercase tracking-wider">Salary Indication</span>
-                          {userPlan === 'free' ? (
+                          {!isJobsUnlocked() ? (
                             <span className="text-xs font-bold text-slate-400">🔒 Locked</span>
                           ) : (
                             <span className="text-sm font-bold text-slate-950">{job.salaryRange}</span>
                           )}
                         </div>
                         <div className="flex space-x-2">
-                          {userPlan === 'free' ? (
+                          {!isJobsUnlocked() ? (
                             <>
                               <button
-                                onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                                onClick={() => { setCheckoutStep('plan_select'); setIsPricingModalOpen(true); }}
                                 className="px-3 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all"
                               >
                                 Unlock with Premium
@@ -1168,16 +1204,16 @@ export function WebApp() {
                 </div>
               </div>
 
-              {userPlan === 'free' ? (
+              {!isJobsUnlocked() ? (
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-8 text-center space-y-4 shadow-sm animate-fadeIn">
                   <span className="text-5xl block">🔒</span>
                   <h3 className="text-lg font-black text-slate-900">Detailed Information Locked</h3>
                   <p className="text-slate-600 text-xs max-w-md mx-auto leading-relaxed">
-                    Full access to detailed qualifications, required documents checklists, evaluation selection procedures, official portal links, and instant application forms is restricted to Premium subscribers.
+                    Full access to detailed qualifications, required documents checklists, evaluation selection procedures, official portal links, and instant application forms is restricted. Requires Career Plan or higher.
                   </p>
                   <div className="pt-2">
                     <button
-                      onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                      onClick={() => { setCheckoutStep('plan_select'); setIsPricingModalOpen(true); }}
                       className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl shadow-md text-xs transition-all"
                     >
                       👑 Unlock with Premium
@@ -1547,7 +1583,7 @@ export function WebApp() {
                           {paginatedTenders.map((tender) => {
                             return (
                               <Card key={tender.id} className="hover:shadow-md transition-all flex flex-col justify-between border-slate-200/80 bg-white p-0 relative overflow-hidden">
-                                {userPlan === 'free' && (
+                                {!isTendersUnlocked() && (
                                   <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm z-10">
                                     <span>🔒</span>
                                     <span>Locked</span>
@@ -1572,10 +1608,10 @@ export function WebApp() {
                                     </p>
                                   </div>
 
-                                  {userPlan === 'free' ? (
+                                  {!isTendersUnlocked() ? (
                                     <div className="p-3 bg-slate-50 border border-slate-150 rounded-xl flex items-center space-x-2 text-xs text-slate-500">
                                       <span>🔒</span>
-                                      <span>Procurement details locked on Free Plan.</span>
+                                      <span>Procurement details locked. Requires Enterprise Plan or higher.</span>
                                     </div>
                                   ) : (
                                     <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{tender.description}</p>
@@ -1585,7 +1621,7 @@ export function WebApp() {
                                 <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between mx-5 mb-5">
                                   <div>
                                     <span className="text-[9px] text-slate-400 block font-semibold uppercase tracking-wider">Estimated Budget</span>
-                                    {userPlan === 'free' ? (
+                                    {!isTendersUnlocked() ? (
                                       <span className="text-xs font-bold text-slate-400">🔒 Locked</span>
                                     ) : (
                                       <span className="text-sm font-black text-slate-950">{tender.value}</span>
@@ -1593,10 +1629,10 @@ export function WebApp() {
                                   </div>
 
                                   <div className="flex space-x-2">
-                                    {userPlan === 'free' ? (
+                                    {!isTendersUnlocked() ? (
                                       <>
                                         <button
-                                          onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                                          onClick={() => { setCheckoutStep('plan_select'); setIsPricingModalOpen(true); }}
                                           className="px-3 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all"
                                         >
                                           Unlock with Premium
@@ -1722,16 +1758,16 @@ export function WebApp() {
                 </div>
               </div>
 
-              {userPlan === 'free' ? (
+              {!isTendersUnlocked() ? (
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-8 text-center space-y-4 shadow-sm animate-fadeIn">
                   <span className="text-5xl block">🔒</span>
                   <h3 className="text-lg font-black text-slate-900">Procurement Specifications Locked</h3>
                   <p className="text-slate-600 text-xs max-w-md mx-auto leading-relaxed">
-                    Full access to engineering designs, bid documents checklists, L1/T1 appraisal paths, EMD guarantee details, and the bid submission portal is restricted to Premium subscribers.
+                    Full access to engineering designs, bid documents checklists, L1/T1 appraisal paths, EMD guarantee details, and the bid submission portal is restricted. Requires Enterprise Plan or higher.
                   </p>
                   <div className="pt-2">
                     <button
-                      onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                      onClick={() => { setCheckoutStep('plan_select'); setIsPricingModalOpen(true); }}
                       className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl shadow-md text-xs transition-all"
                     >
                       👑 Unlock with Premium
@@ -1949,7 +1985,7 @@ export function WebApp() {
                   {paginatedFunding.map((fund) => {
                     return (
                       <Card key={fund.id} className="hover:shadow-md transition-shadow flex flex-col justify-between border-slate-200/80 relative overflow-hidden bg-white p-0">
-                        {userPlan === 'free' && (
+                        {!isFundingUnlocked() && (
                           <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider flex items-center space-x-1 shadow-sm z-10">
                             <span>🔒</span>
                             <span>Locked</span>
@@ -1969,10 +2005,10 @@ export function WebApp() {
                             <p className="text-[10px] text-slate-400 mt-0.5">Date: {fund.publishedDate}</p>
                           </div>
 
-                          {userPlan === 'free' ? (
+                          {!isFundingUnlocked() ? (
                             <div className="p-3 bg-slate-50 border border-slate-150 rounded-xl flex items-center space-x-2 text-xs text-slate-500">
                               <span>🔒</span>
-                              <span>Funding objectives locked on Free Plan.</span>
+                              <span>Funding objectives locked. Requires Jobs & Funding Plan or higher.</span>
                             </div>
                           ) : (
                             <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">{fund.description}</p>
@@ -1982,7 +2018,7 @@ export function WebApp() {
                         <div className="mt-auto pt-4 border-t border-slate-100 flex flex-col space-y-3 mx-5 mb-5">
                           <div className="bg-slate-50 p-2.5 rounded text-xs">
                             <span className="text-slate-400 block font-medium uppercase tracking-wider text-[9px]">Eligible Target</span>
-                            {userPlan === 'free' ? (
+                            {!isFundingUnlocked() ? (
                               <span className="text-xs font-bold text-slate-400">🔒 Locked</span>
                             ) : (
                               <span className="font-semibold text-slate-700 line-clamp-1">{fund.eligibility}</span>
@@ -1990,16 +2026,16 @@ export function WebApp() {
                           </div>
 
                           <div className="flex items-center justify-between">
-                            {userPlan === 'free' ? (
+                            {!isFundingUnlocked() ? (
                               <span className="text-xs font-bold text-slate-400">🔒 Locked</span>
                             ) : (
                               <span className="text-sm font-black text-emerald-600">{fund.amount}</span>
                             )}
                             <div className="flex space-x-1.5">
-                              {userPlan === 'free' ? (
+                              {!isFundingUnlocked() ? (
                                 <>
                                   <button
-                                    onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                                    onClick={() => { setCheckoutStep('plan_select'); setIsPricingModalOpen(true); }}
                                     className="px-2.5 py-1.5 text-[10px] font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all"
                                   >
                                     Unlock with Premium
@@ -2122,16 +2158,16 @@ export function WebApp() {
                 </div>
               </div>
 
-              {userPlan === 'free' ? (
+              {!isFundingUnlocked() ? (
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-8 text-center space-y-4 shadow-sm animate-fadeIn">
                   <span className="text-5xl block">🔒</span>
                   <h3 className="text-lg font-black text-slate-900">Grant Details Locked</h3>
                   <p className="text-slate-600 text-xs max-w-md mx-auto leading-relaxed">
-                    Full access to detailed benefit breakdowns, application checklists, milestone distribution compliance rules, official scheme portals, and direct enrollment forms is restricted to Premium subscribers.
+                    Full access to detailed benefit breakdowns, application checklists, milestone distribution compliance rules, official scheme portals, and direct enrollment forms is restricted. Requires Jobs & Funding Plan or higher.
                   </p>
                   <div className="pt-2">
                     <button
-                      onClick={() => { setUserPlan('premium'); handleShareClick("Premium Unlocked"); }}
+                      onClick={() => { setCheckoutStep('plan_select'); setIsPricingModalOpen(true); }}
                       className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl shadow-md text-xs transition-all"
                     >
                       👑 Unlock with Premium
@@ -2448,6 +2484,164 @@ export function WebApp() {
           </div>
         </div>
       </footer>
+
+      {/* Interactive Subscriptions & Pricing Plans Modal */}
+      {isPricingModalOpen && (
+        <div className="fixed inset-0 z-[100] overflow-y-auto flex items-center justify-center p-4 sm:p-6 md:p-10 animate-fadeIn">
+          {/* Backdrop overlay */}
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onClick={() => { if (!isCheckoutProcessing) setIsPricingModalOpen(false); }}></div>
+
+          {/* Modal Container */}
+          <div className="relative bg-white rounded-3xl shadow-2xl border border-slate-200/50 max-w-6xl w-full max-h-[90vh] overflow-y-auto z-10 animate-scaleUp">
+            {/* Header */}
+            <div className="bg-slate-950 text-white p-6 sm:p-8 flex justify-between items-start sticky top-0 z-20 border-b border-slate-800">
+              <div className="space-y-1">
+                <span className="text-[10px] bg-blue-600 text-white font-black uppercase tracking-widest px-2.5 py-1 rounded">Secure Civic Subscriptions</span>
+                <h2 className="text-2xl font-black tracking-tight">Public Gateway Upgrade Center</h2>
+                <p className="text-xs text-slate-400">Unlock restricted opportunity documents, bid parameters, and grant application portals instantly.</p>
+              </div>
+              <button
+                onClick={() => setIsPricingModalOpen(false)}
+                disabled={isCheckoutProcessing}
+                className="bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors border border-slate-800 disabled:opacity-50"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content body based on checkout steps */}
+            <div className="p-6 sm:p-8">
+              {checkoutStep === 'plan_select' && (
+                <div className="space-y-8">
+                  <div className="text-center space-y-1">
+                    <h3 className="text-xl font-extrabold text-slate-900">Select Your Professional Bidding Tier</h3>
+                    <p className="text-xs text-slate-500">Pick a plan suited to your frequency of public sector applications.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    {SUBSCRIPTION_PLANS.map((plan) => {
+                      const isCurrent = userPlan === plan.id;
+                      return (
+                        <div
+                          key={plan.id}
+                          className={`border rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 relative ${
+                            isCurrent
+                              ? 'border-blue-600 bg-blue-50/10 shadow-lg ring-2 ring-blue-500/20 animate-pulse'
+                              : 'border-slate-200 hover:border-slate-350 bg-white hover:shadow-md'
+                          }`}
+                        >
+                          {isCurrent && (
+                            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm">
+                              Current Plan
+                            </span>
+                          )}
+
+                          <div className="space-y-4">
+                            <div className="space-y-1">
+                              <h4 className="font-extrabold text-slate-900 text-sm">{plan.name}</h4>
+                              <p className="text-[10px] text-slate-400 line-clamp-2 min-h-[30px]">{plan.description}</p>
+                            </div>
+
+                            <div className="space-y-0.5 border-b border-slate-100 pb-3">
+                              <span className="text-2xl font-black text-slate-950 block">{plan.price}</span>
+                              <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Validity: {plan.validity}</span>
+                            </div>
+
+                            <ul className="space-y-2 text-[11px] text-slate-600">
+                              {plan.features.map((feature, idx) => (
+                                <li key={idx} className="flex items-start space-x-1.5 leading-relaxed">
+                                  <span className="text-emerald-500 font-bold">✓</span>
+                                  <span>{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div className="mt-6">
+                            {isCurrent ? (
+                              <button
+                                disabled
+                                className="w-full py-2 bg-slate-100 text-slate-400 text-xs font-bold rounded-lg cursor-default border border-slate-200"
+                              >
+                                Active Plan
+                              </button>
+                            ) : plan.id === 'free' ? (
+                              <button
+                                onClick={() => {
+                                  setUserPlan('free');
+                                  handleShareClick("Plan Reset to Free");
+                                  setIsPricingModalOpen(false);
+                                }}
+                                className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200"
+                              >
+                                Select Free Plan
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handlePlanSelection(plan)}
+                                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors shadow shadow-blue-500/10"
+                              >
+                                Upgrade Now
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {checkoutStep === 'payment_process' && selectedPlanToUpgrade && (
+                <div className="py-12 text-center space-y-6 max-w-md mx-auto animate-scaleUp">
+                  <div className="w-16 h-16 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin mx-auto"></div>
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-black text-slate-950">Razorpay Security Gateway</h3>
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      Please do not close or refresh this browser. Initiating secure order transaction verification for the <strong className="text-slate-900">{selectedPlanToUpgrade.name} ({selectedPlanToUpgrade.price})</strong> subscription...
+                    </p>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    🔒 256-Bit Encrypted Secure Connection
+                  </div>
+                </div>
+              )}
+
+              {checkoutStep === 'payment_success' && selectedPlanToUpgrade && (
+                <div className="py-12 text-center space-y-6 max-w-md mx-auto animate-scaleUp">
+                  <span className="text-6xl block">👑</span>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-black text-slate-950">Subscription Successfully Upgraded!</h3>
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      Your account has been successfully upgraded to the <strong className="text-emerald-600 font-extrabold">{selectedPlanToUpgrade.name}</strong>. Full premium access limits mapped to this tier have been unlocked!
+                    </p>
+                  </div>
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-left space-y-1.5 text-xs text-slate-700 font-medium">
+                    <div>
+                      <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Transaction ID</span>
+                      <span className="font-mono text-slate-900 font-bold">{paymentTxId}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Plan Validity</span>
+                      <span>{selectedPlanToUpgrade.validity}</span>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setCheckoutStep('plan_select');
+                      setSelectedPlanToUpgrade(null);
+                      setIsPricingModalOpen(false);
+                    }}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow-lg"
+                  >
+                    Done & View Opportunities
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

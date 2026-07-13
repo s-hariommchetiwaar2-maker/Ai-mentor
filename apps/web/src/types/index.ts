@@ -1,6 +1,17 @@
 export type PageView = 'home' | 'jobs' | 'tenders' | 'funding' | 'contact';
 
-export type UserPlan = 'free' | 'premium';
+export type UserPlan = 'free' | 'premium-299' | 'premium-999' | 'premium-3999' | 'premium-6999';
+
+export interface SubscriptionPlan {
+  id: UserPlan;
+  name: string;
+  price: string;
+  priceNumeric: number;
+  validity: string;
+  validityMonths: number;
+  description: string;
+  features: string[];
+}
 
 export interface JobListing {
   id: string;
