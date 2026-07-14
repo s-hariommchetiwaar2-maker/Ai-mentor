@@ -96,3 +96,28 @@ export interface ContactInquiry {
   subject: string;
   message: string;
 }
+
+export interface UserPreferences {
+  emailOptIn: boolean;
+  whatsappOptIn: boolean;
+  pushOptIn: boolean;
+  interests: {
+    jobs: boolean;
+    tenders: boolean;
+    funding: boolean;
+    schemes: boolean;
+    careerGuidance: boolean;
+    education: boolean;
+    aiFeatures: boolean;
+    platformUpdates: boolean;
+  };
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  body: string;
+  category: 'New features' | 'Important updates' | 'New learning content' | 'Government opportunity alerts' | 'Platform announcements';
+  targetAudience: keyof UserPreferences['interests'];
+  date: string;
+}

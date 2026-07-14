@@ -9,7 +9,9 @@ import {
   JobListing,
   TenderListing,
   FundingScheme,
-  ContactInquiry
+  ContactInquiry,
+  UserPreferences,
+  Announcement
 } from './types/index.js';
 
 // Import Mock Data Layer
@@ -202,6 +204,58 @@ export function WebApp() {
   const isTendersUnlocked = () => {
     return userPlan === 'premium-3999' || userPlan === 'premium-6999';
   };
+
+  // User Communication preferences
+  const [userPrefs, setUserPreferences] = useState<UserPreferences>({
+    emailOptIn: true,
+    whatsappOptIn: false,
+    pushOptIn: true,
+    interests: {
+      jobs: true,
+      tenders: false,
+      funding: true,
+      schemes: true,
+      careerGuidance: false,
+      education: false,
+      aiFeatures: false,
+      platformUpdates: true,
+    }
+  });
+
+  // Admin Announcements Feed (seeded with realistic mock alerts)
+  const [announcements, setAnnouncements] = useState<Announcement[]>([
+    {
+      id: 'ann-1',
+      title: 'DPIIT Deep-Tech Grant Pro-Draft Guidelines Published',
+      body: 'Important pre-draft guidelines for the National Deep-Tech startup incubation sandbox are now available on the Central schemes registry. Eligible startups can review documents on the platform.',
+      category: 'Government opportunity alerts',
+      targetAudience: 'funding',
+      date: '2026-08-01',
+    },
+    {
+      id: 'ann-2',
+      title: 'Introducing Multi-Modal Sidebar Sub-navigation Panels',
+      body: 'We have updated our Tenders platform layout to include a vertical side-navigation panel, enabling bidders to filter opportunities across 16 distinct categories with instant state-level counts.',
+      category: 'New features',
+      targetAudience: 'platformUpdates',
+      date: '2026-08-05',
+    },
+    {
+      id: 'ann-3',
+      title: 'State Highway widening bid criteria released',
+      body: 'The PWD corridor development board has released concrete thickness and asphalt binder composition specifications for upcoming highways. Check Tenders list.',
+      category: 'Important updates',
+      targetAudience: 'tenders',
+      date: '2026-08-03',
+    }
+  ]);
+
+  // Admin Compose Form States
+  const [adminTitle, setAdminTitle] = useState('');
+  const [adminBody, setAdminBody] = useState('');
+  const [adminCategory, setAdminCategory] = useState<Announcement['category']>('New features');
+  const [adminTargetAudience, setAdminTargetAudience] = useState<keyof UserPreferences['interests']>('jobs');
+  const [showAdminConsole, setShowAdminConsole] = useState(false);
 
   // Interactive pricing modal and simulated checkout states
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
@@ -942,6 +996,161 @@ export function WebApp() {
               <Button onClick={() => setCurrentView('contact')} variant="secondary" className="bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold whitespace-nowrap">
                 Ask a Question
               </Button>
+            </div>
+
+            {/* Live Announcements Alert Feed (Opt-In filtered) */}
+            <div className="space-y-6 pt-4">
+              <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 flex items-center space-x-2">
+                    <span>📰</span>
+                    <span>National Citizen Alert Feed</span>
+                  </h2>
+                  <p className="text-slate-500 text-xs mt-0.5">Real-time official announcements filtered according to your opted-in subscription preferences.</p>
+                </div>
+                <button
+                  onClick={() => setShowAdminConsole(!showAdminConsole)}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3.5 py-1.5 rounded-lg border border-slate-200 flex items-center space-x-1.5 shadow-sm"
+                >
+                  <span>🔒</span>
+                  <span>{showAdminConsole ? 'Hide Admin Console' : 'Simulated Admin Portal'}</span>
+                </button>
+              </div>
+
+              {/* Admin Console Composer Overlay */}
+              {showAdminConsole && (
+                <div className="bg-slate-950 text-white rounded-2xl p-6 shadow-xl border border-slate-800 space-y-4 animate-scaleUp">
+                  <div className="border-b border-white/10 pb-2">
+                    <h3 className="text-sm font-black text-blue-400 uppercase tracking-wider">🔒 Announcement Management Console</h3>
+                    <p className="text-[10px] text-slate-400">Publish a new communication broadcast. This broadcast will instantly propagate only to citizens subscribed to the chosen interest.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-300 uppercase block">Announcement Title</label>
+                      <input
+                        type="text"
+                        placeholder="Enter catchy alert title..."
+                        value={adminTitle}
+                        onChange={(e) => setAdminTitle(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-300 uppercase block">Broadcast Category</label>
+                      <select
+                        value={adminCategory}
+                        onChange={(e) => setAdminCategory(e.target.value as any)}
+                        className="w-full px-2 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
+                      >
+                        <option value="New features">New features</option>
+                        <option value="Important updates">Important updates</option>
+                        <option value="New learning content">New learning content</option>
+                        <option value="Government opportunity alerts">Government opportunity alerts</option>
+                        <option value="Platform announcements">Platform announcements</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-300 uppercase block">Target Interest Channel</label>
+                      <select
+                        value={adminTargetAudience}
+                        onChange={(e) => setAdminTargetAudience(e.target.value as any)}
+                        className="w-full px-2 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
+                      >
+                        <option value="jobs">Government Jobs</option>
+                        <option value="tenders">Government Tenders</option>
+                        <option value="funding">Government Funding</option>
+                        <option value="schemes">Government Schemes</option>
+                        <option value="careerGuidance">Career Guidance</option>
+                        <option value="education">Education</option>
+                        <option value="aiFeatures">AI Features</option>
+                        <option value="platformUpdates">Platform Updates</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-300 uppercase block">Broadcast Message Body</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Write the official notification broadcast payload..."
+                      value={adminBody}
+                      onChange={(e) => setAdminBody(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                    ></textarea>
+                  </div>
+
+                  <div className="flex justify-between items-center flex-wrap gap-2 pt-2">
+                    <span className="text-[9px] text-slate-500">Note: API integration triggers are pre-configured in local security modules.</span>
+                    <button
+                      onClick={() => {
+                        if (!adminTitle || !adminBody) {
+                          handleShareClick("Error: Please provide title and body.");
+                          return;
+                        }
+                        const newAnn: Announcement = {
+                          id: 'ann-' + Date.now(),
+                          title: adminTitle,
+                          body: adminBody,
+                          category: adminCategory,
+                          targetAudience: adminTargetAudience,
+                          date: new Date().toISOString().split('T')[0],
+                        };
+                        setAnnouncements([newAnn, ...announcements]);
+                        setAdminTitle('');
+                        setAdminBody('');
+                        handleShareClick(`Published: "${adminTitle}" broadcast registered!`);
+                      }}
+                      className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded-xl shadow-md transition-colors"
+                    >
+                      Publish Announcement
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Display filtered alerts feed */}
+              {(() => {
+                const visibleAnnouncements = announcements.filter((ann) => userPrefs.interests[ann.targetAudience]);
+                return visibleAnnouncements.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fadeIn">
+                    {visibleAnnouncements.map((ann) => (
+                      <Card key={ann.id} className="border-slate-200/80 hover:shadow-md transition-all flex flex-col justify-between bg-white">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center flex-wrap gap-1.5">
+                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                              ann.category === 'New features'
+                                ? 'bg-blue-100 text-blue-800'
+                                : ann.category === 'Important updates'
+                                ? 'bg-red-100 text-red-800'
+                                : ann.category === 'Government opportunity alerts'
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-emerald-100 text-emerald-800'
+                            }`}>
+                              {ann.category}
+                            </span>
+                            <span className="text-[9px] text-slate-400 font-bold">{ann.date}</span>
+                          </div>
+                          <h4 className="font-extrabold text-slate-900 text-sm">{ann.title}</h4>
+                          <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">{ann.body}</p>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 font-semibold">
+                          <span>Target: <strong className="text-slate-600 uppercase">{ann.targetAudience}</strong></span>
+                          <span className="text-emerald-500">✓ Opted-in</span>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500 shadow-sm max-w-md mx-auto space-y-2">
+                    <span className="text-3xl block">📭</span>
+                    <h4 className="font-extrabold text-slate-800 text-sm">Alert Feed is Empty</h4>
+                    <p className="text-xs leading-relaxed max-w-xs mx-auto">
+                      You currently have not opted into any interest topics matching the published alerts. Go to the <strong className="text-blue-600 cursor-pointer" onClick={() => setCurrentView('contact')}>Subscription Center</strong> to configure your preferences!
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}
@@ -2428,6 +2637,140 @@ export function WebApp() {
                     </form>
                   )}
                 </Card>
+              </div>
+            </div>
+
+            {/* User Subscription & Preferences Panel */}
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6 mt-8">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="font-extrabold text-lg text-slate-900 flex items-center space-x-2">
+                  <span>📬</span>
+                  <span>Citizen Subscription & Alert Center</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">Configure your personal interest categories and notification channel preferences to receive targeted updates.</p>
+              </div>
+
+              {/* Interests checklist */}
+              <div className="space-y-3">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">1. Select Your Interest Topics</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {Object.keys(userPrefs.interests).map((key) => {
+                    const labelMap: Record<string, string> = {
+                      jobs: 'Government Jobs',
+                      tenders: 'Government Tenders',
+                      funding: 'Government Funding',
+                      schemes: 'Government Schemes',
+                      careerGuidance: 'Career Guidance',
+                      education: 'Education',
+                      aiFeatures: 'AI Features',
+                      platformUpdates: 'Platform Updates',
+                    };
+                    const prop = key as keyof UserPreferences['interests'];
+                    const isChecked = userPrefs.interests[prop];
+                    return (
+                      <label
+                        key={key}
+                        className={`flex items-center space-x-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
+                          isChecked
+                            ? 'border-blue-500 bg-blue-50/10'
+                            : 'border-slate-150 hover:bg-slate-50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            setUserPreferences({
+                              ...userPrefs,
+                              interests: {
+                                ...userPrefs.interests,
+                                [prop]: e.target.checked
+                              }
+                            });
+                          }}
+                          className="w-4 h-4 text-blue-600 border-slate-350 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-xs font-bold text-slate-800">{labelMap[key]}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Channels checklist */}
+              <div className="space-y-3">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">2. Select Your Notification Channels</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Email Channel */}
+                  <label className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
+                    userPrefs.emailOptIn ? 'border-blue-500 bg-blue-50/10' : 'border-slate-150 hover:bg-slate-50'
+                  }`}>
+                    <div className="flex items-center space-x-2.5">
+                      <span className="text-lg">📧</span>
+                      <div>
+                        <span className="text-xs font-black block text-slate-800">Email Delivery</span>
+                        <span className="text-[9px] text-slate-400">Receive alerts via citizen inbox</span>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={userPrefs.emailOptIn}
+                      onChange={(e) => setUserPreferences({ ...userPrefs, emailOptIn: e.target.checked })}
+                      className="w-4.5 h-4.5 text-blue-600 border-slate-350 rounded focus:ring-blue-500"
+                    />
+                  </label>
+
+                  {/* WhatsApp Channel */}
+                  <label className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
+                    userPrefs.whatsappOptIn ? 'border-emerald-500 bg-emerald-50/10' : 'border-slate-150 hover:bg-slate-50'
+                  }`}>
+                    <div className="flex items-center space-x-2.5">
+                      <span className="text-lg">💬</span>
+                      <div>
+                        <span className="text-xs font-black block text-slate-800">WhatsApp Alerts</span>
+                        <span className="text-[9px] text-emerald-600 font-bold block">Future Integration API</span>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={userPrefs.whatsappOptIn}
+                      onChange={(e) => setUserPreferences({ ...userPrefs, whatsappOptIn: e.target.checked })}
+                      className="w-4.5 h-4.5 text-emerald-600 border-slate-350 rounded focus:ring-emerald-500"
+                    />
+                  </label>
+
+                  {/* Push Notification Channel */}
+                  <label className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
+                    userPrefs.pushOptIn ? 'border-blue-500 bg-blue-50/10' : 'border-slate-150 hover:bg-slate-50'
+                  }`}>
+                    <div className="flex items-center space-x-2.5">
+                      <span className="text-lg">🔔</span>
+                      <div>
+                        <span className="text-xs font-black block text-slate-800">Push Notifications</span>
+                        <span className="text-[9px] text-slate-400">Receive alerts via browser popups</span>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={userPrefs.pushOptIn}
+                      onChange={(e) => setUserPreferences({ ...userPrefs, pushOptIn: e.target.checked })}
+                      className="w-4.5 h-4.5 text-blue-600 border-slate-350 rounded focus:ring-blue-500"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Opt-in Confirm and Trigger */}
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-4">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                  {(userPrefs.emailOptIn || userPrefs.whatsappOptIn || userPrefs.pushOptIn) ? '✅ Opted-in for dynamic subscriptions' : '⚠️ No channels selected'}
+                </span>
+                <Button
+                  onClick={() => handleShareClick("Notification preferences successfully saved!")}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-md"
+                >
+                  Save Preference Settings
+                </Button>
               </div>
             </div>
           </div>
