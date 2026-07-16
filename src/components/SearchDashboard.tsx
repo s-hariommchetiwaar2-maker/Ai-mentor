@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { statesAndUTs, StateOrUT } from "../data/states";
-import { Search, MapPin, ExternalLink, Briefcase, FileText, Gift, Landmark, Filter, CheckCircle } from "lucide-react";
+import { statesAndUTs } from "../data/states";
+import { Search, MapPin, ExternalLink, Briefcase, FileText, Gift, Landmark, Filter } from "lucide-react";
 import Link from "next/link";
 
 export default function SearchDashboard() {

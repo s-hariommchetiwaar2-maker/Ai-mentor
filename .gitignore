@@ -1,16 +1,19 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
 # dependencies
+node_modules
 /node_modules
 /.pnpm-store
+/.pnpm-debug.log*
 
 # testing
 /coverage
 
-# next.js
+# next.js and production
 /.next/
 /out/
-
-# production
-/build
+build/
+dist/
 
 # misc
 .DS_Store
@@ -20,10 +23,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
 
 # local env files
 .env*.local
+
+# typescript
+*.tsbuildinfo
 
 # vercel
 .vercel

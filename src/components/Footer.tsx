@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Landmark, ShieldAlert, Heart, ExternalLink, HelpCircle } from "lucide-react";
+import { Landmark, ShieldAlert, ExternalLink } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
