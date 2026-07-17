@@ -19,9 +19,22 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@ai-mentor/core": ["./packages/core/src/index.ts"],
+      "@ai-mentor/shared-ui": ["./packages/shared-ui/src/index.tsx"],
+      "@ai-mentor/plugin-sdk": ["./packages/plugin-sdk/src/index.ts"],
+      "@ai-mentor/ai-engine": ["./packages/ai-engine/src/index.ts"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "apps",
+    "packages"
+  ]
 }
