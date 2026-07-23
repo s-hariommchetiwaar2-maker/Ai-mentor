@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "apps/web",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "apps/admin",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "$1"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "@vite-api-url",
+    "NODE_ENV": "production"
+  },
+  "buildCommand": "pnpm install && pnpm build"
+}
